@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import theme from "../themes/theme";
 import { useTranslation } from "../i18n"; // frontend/i18n/index.ts
 
@@ -35,6 +36,40 @@ export default function OrderForm() {
   const [error, setError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [agreed, setAgreed] = useState(false);
+
+  // Save form data to cookies whenever it changes
+  const saveFormToCookies = (formData: OrderPayload) => {
+    if (typeof document !== 'undefined') {
+      const cookieValue = JSON.stringify(formData);
+      document.cookie = `orderFormData=${encodeURIComponent(cookieValue)}; path=/; max-age=86400`; // 24 hours
+    }
+  };
+
+  // Load form data from cookies on component mount
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const cookies = document.cookie.split(';');
+      const orderFormCookie = cookies.find(cookie => cookie.trim().startsWith('orderFormData='));
+      
+      if (orderFormCookie) {
+        try {
+          const cookieValue = decodeURIComponent(orderFormCookie.split('=')[1]);
+          const parsedData = JSON.parse(cookieValue);
+          setForm(parsedData);
+        } catch (error) {
+          console.error('Error parsing saved form data from cookies:', error);
+        }
+      }
+    }
+  }, []);
+
+  // Update form with immediate saving to cookies
+  const updateForm = (updates: Partial<OrderPayload>) => {
+    const newForm = { ...form, ...updates };
+    setForm(newForm);
+    // Save immediately to cookies
+    saveFormToCookies(newForm);
+  };
 
   function validateForm() {
     const errors: string[] = [];
@@ -108,6 +143,10 @@ export default function OrderForm() {
         message: "",
       });
       setAgreed(false);
+      // Clear saved form data after successful submission
+      if (typeof document !== 'undefined') {
+        document.cookie = 'orderFormData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
     } catch (err: any) {
       setError("error");
     } finally {
@@ -147,7 +186,7 @@ export default function OrderForm() {
             value={form.telegram}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, telegram: e.target.value })}
+            onChange={(e) => updateForm({ telegram: e.target.value })}
             placeholder={t("order.form.telegram_ph")}
           />
         }
@@ -164,7 +203,7 @@ export default function OrderForm() {
             value={form.projectName}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, projectName: e.target.value })}
+            onChange={(e) => updateForm({ projectName: e.target.value })}
             placeholder={t("order.form.projectName_ph")}
           />
         }
@@ -182,7 +221,7 @@ export default function OrderForm() {
             value={form.shortDescription}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, shortDescription: e.target.value })}
+            onChange={(e) => updateForm({ shortDescription: e.target.value })}
             placeholder={t("order.form.shortDescription_ph")}
           />
         }
@@ -190,7 +229,29 @@ export default function OrderForm() {
 
       {/* Техническое задание */}
       <Field
-        label={t("order.form.technicalSpec")}
+        label={
+          <div className="flex items-center justify-between">
+            <span>{t("order.form.technicalSpec")}</span>
+            <Link
+              href="/guides/technical-specification"
+              className="text-xs px-2 py-1 rounded-md transition"
+              style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                border: `1px solid ${theme.colors.border}`,
+                color: theme.colors.mutedForeground,
+              }}
+              title={t("order.form.technicalSpecHelp")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+              }}
+            >
+              {t("order.form.technicalSpecHelp")}
+            </Link>
+          </div>
+        }
         required
         input={
           <textarea
@@ -200,7 +261,7 @@ export default function OrderForm() {
             value={form.technicalSpec}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, technicalSpec: e.target.value })}
+            onChange={(e) => updateForm({ technicalSpec: e.target.value })}
             placeholder={t("order.form.technicalSpec_ph")}
           />
         }
@@ -216,7 +277,7 @@ export default function OrderForm() {
             value={form.timeline}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, timeline: e.target.value })}
+            onChange={(e) => updateForm({ timeline: e.target.value })}
             placeholder={t("order.form.timeline_ph")}
           />
         }
@@ -233,7 +294,7 @@ export default function OrderForm() {
             value={form.promo}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, promo: e.target.value })}
+            onChange={(e) => updateForm({ promo: e.target.value })}
             placeholder={t("order.form.promo_ph")}
           />
         }
@@ -250,7 +311,7 @@ export default function OrderForm() {
             value={form.email}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            onChange={(e) => updateForm({ email: e.target.value })}
             placeholder={t("order.form.email_ph")}
           />
         }
@@ -267,7 +328,7 @@ export default function OrderForm() {
             value={form.message}
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            onChange={(e) => updateForm({ message: e.target.value })}
             placeholder={t("order.form.message_ph")}
           />
         }
@@ -444,7 +505,7 @@ export default function OrderForm() {
                   className="w-5 h-5 rounded-md border-2 flex items-center justify-center transition"
                   style={{
                     borderColor: agreed ? theme.colors.accent : theme.colors.border,
-                    background: agreed ? theme.colors.accent : "transparent",
+                    background: agreed ? theme.colors.accent : "white",
                   }}
                 >
                   {agreed && (
@@ -455,7 +516,15 @@ export default function OrderForm() {
                 </div>
               </div>
               <label htmlFor="agreement" className="text-sm cursor-pointer" style={{ color: theme.colors.mutedForeground }}>
-                {t("order.confirmation.agreement")}
+                <span>{t("order.confirmation.agreement")}</span>
+                <Link
+                  href="/guides/terms-and-conditions"
+                  className="ml-1 underline hover:no-underline transition"
+                  style={{ color: theme.colors.accent }}
+                  target="_blank"
+                >
+                  {t("order.confirmation.termsLink")}
+                </Link>
               </label>
             </div>
 
@@ -498,14 +567,20 @@ function Field({
   input,
   required,
 }: {
-  label: string;
+  label: string | React.ReactNode;
   input: React.ReactNode;
   required?: boolean;
 }) {
   return (
     <div>
       <label className="block text-sm mb-1" style={{ color: theme.colors.mutedForeground }}>
-        {label} {required ? "*" : ""}
+        {typeof label === 'string' ? (
+          <>
+            {label} {required ? "*" : ""}
+          </>
+        ) : (
+          label
+        )}
       </label>
       {input}
     </div>

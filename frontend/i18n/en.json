@@ -26,6 +26,7 @@
       "shortDescription_ph": "What should the solution do?",
       "technicalSpec": "Technical specification",
       "technicalSpec_ph": "Details, requirements, integrations…",
+      "technicalSpecHelp": "How to write TS",
       "timeline": "Timeline",
       "timeline_ph": "e.g. by Oct 10",
       "telegram": "Telegram",
@@ -58,7 +59,8 @@
       "notification1": "We'll send you a confirmation message",
       "notification2": "Our team will review your request within 24 hours",
       "notification3": "You'll receive project timeline and next steps",
-      "agreement": "I agree to the processing of my data",
+      "agreement": "I agree to the processing of my data and",
+      "termsLink": "terms and conditions",
       "cancel": "Cancel",
       "confirm": "Confirm"
     }
@@ -185,6 +187,90 @@
         "a": "Yes, we're happy to sign NDAs to protect your intellectual property and business ideas."
       }
     ]
+  },
+  "guides": {
+    "backToOrder": "Back to order form",
+    "formSaved": "Form progress saved",
+    "technicalSpec": {
+      "title": "How to create a Technical Specification",
+      "subtitle": "A detailed guide on writing effective technical specifications for your project",
+      "section1": {
+        "title": "What is a Technical Specification?",
+        "content1": "A technical specification (TS) is a detailed document that describes the technical requirements, architecture, and implementation details of your project. It serves as a blueprint for developers and helps ensure everyone understands what needs to be built.",
+        "content2": "A well-written TS saves time, reduces misunderstandings, and helps estimate project costs and timelines more accurately."
+      },
+      "section2": {
+        "title": "What to include in your TS",
+        "item1": {
+          "title": "Project Overview",
+          "content": "Brief description of what you want to build, target audience, and main goals."
+        },
+        "item2": {
+          "title": "Functional Requirements",
+          "content": "Detailed list of features and functionality your system should have. Be specific about user interactions, data processing, and system behavior."
+        },
+        "item3": {
+          "title": "Technical Requirements",
+          "content": "Specify technologies, platforms, integrations, performance requirements, and any technical constraints."
+        }
+      },
+      "section3": {
+        "title": "Examples",
+        "example1": {
+          "title": "Good Example",
+          "content": "Create a user registration form with email validation, password requirements (8+ chars, special symbols), and email confirmation. Store user data in PostgreSQL database."
+        },
+        "example2": {
+          "title": "Bad Example",
+          "content": "Make a form for users to sign up. It should work well and be secure."
+        }
+      },
+      "section4": {
+        "title": "Tips for writing effective TS",
+        "content": "Be specific and detailed. Use clear language. Include examples and use cases. Consider edge cases and error handling. Break down complex features into smaller components.",
+        "tip": "The more detailed your specification, the more accurate our estimate will be and the faster we can start development."
+      }
+    },
+    "terms": {
+      "title": "Terms and Conditions",
+      "subtitle": "Please read our terms and conditions before proceeding with your order",
+      "section1": {
+        "title": "Agreement Overview",
+        "content1": "By submitting your order, you agree to these terms and conditions. This agreement governs the relationship between you (the client) and AutoFina (the service provider).",
+        "content2": "These terms apply to all services provided by AutoFina, including but not limited to automation solutions, web development, and consulting services."
+      },
+      "section2": {
+        "title": "Service Terms",
+        "item1": {
+          "title": "Project Scope",
+          "content": "The scope of work is defined in the technical specification provided by the client. Any changes to the scope may result in additional costs and timeline adjustments."
+        },
+        "item2": {
+          "title": "Timeline and Delivery",
+          "content": "Project timelines are estimates based on the provided requirements. Delays may occur due to scope changes, technical complexity, or client feedback cycles."
+        },
+        "item3": {
+          "title": "Payment Terms",
+          "content": "Payment is due according to the agreed schedule. We accept bank transfers and cryptocurrency payments. Late payments may incur additional fees."
+        }
+      },
+      "section3": {
+        "title": "Intellectual Property",
+        "item1": {
+          "title": "Client Rights",
+          "content": "Upon full payment, the client receives full ownership of the delivered code and documentation, excluding third-party libraries and frameworks."
+        },
+        "item2": {
+          "title": "Confidentiality",
+          "content": "We maintain strict confidentiality regarding your project details and business information. All communications and project data are protected under NDA."
+        }
+      },
+      "section4": {
+        "title": "Support and Warranty",
+        "content": "We provide 30 days of free support for bug fixes and minor adjustments after project delivery. Major feature changes are not included in the warranty period.",
+        "contact": "For questions about these terms, contact us via Telegram or email."
+      }
+    }
   }
 }
 
