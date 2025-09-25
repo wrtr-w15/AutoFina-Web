@@ -9,6 +9,60 @@
     "services": "Our services",
     "faq": "FAQ"
   },
+  "nav": {
+    "home": "Home",
+    "order": "Order",
+    "available": "Available",
+    "faq": "FAQ",
+    "guides": "Guides"
+  },
+  "order": {
+    "title": "Place a request",
+    "subtitle": "Fill out the form and we will contact you.",
+    "form": {
+      "projectName": "Project name",
+      "projectName_ph": "e.g. Auto-posting to Telegram",
+      "shortDescription": "Short description",
+      "shortDescription_ph": "What should the solution do?",
+      "technicalSpec": "Technical specification",
+      "technicalSpec_ph": "Details, requirements, integrations…",
+      "timeline": "Timeline",
+      "timeline_ph": "e.g. by Oct 10",
+      "telegram": "Telegram",
+      "telegram_ph": "@username",
+      "promo": "Promo code",
+      "promo_ph": "PROMO2025",
+      "email": "Email",
+      "email_ph": "you@example.com",
+      "message": "Message",
+      "message_ph": "Additional details",
+      "name": "Name",
+      "phone": "Phone",
+      "comment": "Comment",
+      "submit": "Send request",
+      "submitting": "Sending...",
+      "success": "Your request has been sent! We'll contact you soon.",
+      "errorGeneric": "Failed to send. Try again later."
+    },
+    "validation": {
+      "required": "is required",
+      "emailInvalid": "Invalid email format",
+      "agreementRequired": "You must agree to the terms"
+    },
+    "confirmation": {
+      "title": "Confirm Order",
+      "dataTitle": "Your Data",
+      "notificationTitle": "What happens next?",
+      "telegramTitle": "Telegram Notification",
+      "telegramSubtitle": "We'll contact you via Telegram",
+      "notification1": "We'll send you a confirmation message",
+      "notification2": "Our team will review your request within 24 hours",
+      "notification3": "You'll receive project timeline and next steps",
+      "agreement": "I agree to the processing of my data",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    }
+  },
   "home": {
     "hero": {
       "cta": "View services",
@@ -51,6 +105,86 @@
       ]
     },
     "back_to_top": "Back to top"
+  },
+  "shop": {
+    "title": "Available Solutions",
+    "subtitle": "Ready-made automation solutions and scripts",
+    "cards": [
+      {
+        "title": "Telegram Auto-Poster",
+        "description": "Automatically post content to multiple Telegram channels with scheduling and media support.",
+        "price": "$99",
+        "features": ["Multi-channel posting", "Media support", "Scheduling", "Analytics"]
+      },
+      {
+        "title": "Data Parser & Exporter",
+        "description": "Extract data from websites and export to Excel/CSV with custom filters and validation.",
+        "price": "$149",
+        "features": ["Web scraping", "Data validation", "Excel export", "Custom filters"]
+      },
+      {
+        "title": "Google Sheets Automation",
+        "description": "Automate Google Sheets operations: data entry, calculations, and report generation.",
+        "price": "$79",
+        "features": ["Auto data entry", "Formulas", "Reports", "API integration"]
+      },
+      {
+        "title": "Social Media Scheduler",
+        "description": "Schedule and manage posts across multiple social media platforms from one dashboard.",
+        "price": "$199",
+        "features": ["Multi-platform", "Scheduling", "Analytics", "Content library"]
+      },
+      {
+        "title": "Email Automation Suite",
+        "description": "Automated email campaigns with personalization, tracking, and A/B testing.",
+        "price": "$129",
+        "features": ["Personalization", "A/B testing", "Analytics", "Templates"]
+      },
+      {
+        "title": "API Integration Hub",
+        "description": "Connect different services and APIs with custom workflows and data transformation.",
+        "price": "$179",
+        "features": ["API connections", "Data transformation", "Workflows", "Monitoring"]
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about our services",
+    "questions": [
+      {
+        "q": "How do we start a project?",
+        "a": "Short call/chat → brief → timing/cost estimate → development sprints → release."
+      },
+      {
+        "q": "What are the typical timelines?",
+        "a": "MVP usually takes 3–10 days. Depends on integrations and logic volume."
+      },
+      {
+        "q": "What technologies do you use?",
+        "a": "Next.js/React, Tailwind, n8n, Telegram Bot API, Node.js, Postgres/MySQL, GSheets/Drive."
+      },
+      {
+        "q": "How do you handle payments?",
+        "a": "Fixed per sprint or hourly. Milestones and post-payment after demos are possible."
+      },
+      {
+        "q": "Do you provide support after delivery?",
+        "a": "Yes, we offer 30 days of free support for bug fixes and minor adjustments."
+      },
+      {
+        "q": "Can you work with existing systems?",
+        "a": "Absolutely! We specialize in integrating with existing APIs, databases, and third-party services."
+      },
+      {
+        "q": "What if I need changes during development?",
+        "a": "We use agile sprints, so changes can be incorporated in the next iteration."
+      },
+      {
+        "q": "Do you sign NDAs?",
+        "a": "Yes, we're happy to sign NDAs to protect your intellectual property and business ideas."
+      }
+    ]
   }
 }
 

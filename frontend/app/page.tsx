@@ -1,13 +1,32 @@
 // frontend/app/page.tsx
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
+import Link from "next/link"
+import { motion } from "framer-motion"
 import theme from "../themes/theme"
 import { getDictionary } from "../i18n"
+import LanguagePopover from "../components/LanguagePopover"
 
 export default function Home() {
-  const dict = getDictionary(typeof navigator !== 'undefined' ? navigator.language?.slice(0, 2) : 'ru')
-  // very smooth scroll + reveal-on-scroll
+  const [locale, setLocale] = useState<'ru' | 'en' | 'uk'>('ru')
+  const [dict, setDict] = useState(getDictionary('ru'))
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    // Get locale from localStorage or default to 'ru'
+    const savedLocale = localStorage.getItem('locale') as 'ru' | 'en' | 'uk' || 'ru'
+    setLocale(savedLocale)
+    setDict(getDictionary(savedLocale))
+    setMounted(true)
+  }, [])
+
+  const handleLocaleChange = (newLocale: 'ru' | 'en' | 'uk') => {
+    setLocale(newLocale)
+    setDict(getDictionary(newLocale))
+    localStorage.setItem('locale', newLocale)
+  }
+  // very smooth scroll + reveal-on-scroll + background blur on scroll
   useEffect(() => {
     // force smooth for all anchors
     document.documentElement.style.scrollBehavior = "smooth"
@@ -25,7 +44,26 @@ export default function Home() {
       { threshold: 0.12, rootMargin: "0px 0px -10% 0px" }
     )
     els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+
+    // Background blur on scroll
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      const heroHeight = window.innerHeight
+      const blurElement = document.getElementById('background-blur')
+      
+      if (blurElement) {
+        // Calculate blur intensity based on scroll position
+        const blurIntensity = Math.min(scrollY / (heroHeight * 0.5), 8) // Max blur of 8px
+        blurElement.style.filter = `blur(${blurIntensity}px)`
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    
+    return () => {
+      io.disconnect()
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   const scrollTo = (id: string) => (e: React.MouseEvent) => {
@@ -58,8 +96,39 @@ export default function Home() {
         }
       `}</style>
 
+      {/* Language selector in top-right corner */}
+      {mounted && (
+        <div className="fixed top-6 right-6 z-50">
+          <LanguagePopover currentLocale={locale} onLocaleChange={handleLocaleChange} />
+        </div>
+      )}
+
       {/* HERO */}
       <section id="hero" className="relative flex min-h-dvh items-center justify-center px-6">
+        {/* Background image with scroll-based blur */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "url('/images/background.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            filter: "blur(0px)",
+            transition: "filter 0.3s ease-out",
+          }}
+          id="background-blur"
+        />
+        
+        {/* Overlay for better text readability */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: "rgba(10,10,11,0.3)",
+          }}
+        />
+        
         {/* soft glow */}
         <div
           aria-hidden
@@ -74,9 +143,11 @@ export default function Home() {
           className="relative w-full"
           style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}
         >
-          <h1
-            data-reveal
-            className="text-5xl sm:text-7xl font-black tracking-tight text-center"
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-6xl sm:text-8xl font-black tracking-tight text-center"
             style={{
               lineHeight: 1.05,
               letterSpacing: "-0.02em",
@@ -84,37 +155,36 @@ export default function Home() {
             }}
           >
             {dict.app.brand}
-          </h1>
+          </motion.h1>
 
-          {/* описание под названием — удалено */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+            className="mt-6 text-center text-lg sm:text-xl"
+            style={{ color: theme.colors.mutedForeground }}
+          >
+            {dict.app.tagline}
+          </motion.p>
 
-          <div className="mt-10 flex items-center justify-center">
-            <a
-              data-reveal
-              onClick={scrollTo("services")}
-              href="#services"
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+            className="mt-10 flex items-center justify-center"
+          >
+            <Link
+              href="/order"
               className="inline-flex items-center rounded-full px-6 py-3 font-semibold transition"
               style={{
                 border: `1px solid ${theme.colors.mutedForeground}`,
                 color: theme.colors.mutedForeground, // совпадает с h1
                 background: "transparent",
               }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget
-                el.style.background = theme.colors.muted
-                el.style.color = theme.colors.foreground
-                el.style.boxShadow = theme.shadow.soft
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget
-                el.style.background = "transparent"
-                el.style.color = theme.colors.mutedForeground
-                el.style.boxShadow = "none"
-              }}
             >
               {dict.app.cta_services}
-            </a>
-          </div>
+            </Link>
+          </motion.div>
 
           {/* прыгающая стрелка — удалена */}
         </div>

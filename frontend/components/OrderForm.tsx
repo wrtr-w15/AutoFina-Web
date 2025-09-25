@@ -1,113 +1,513 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import theme from "../themes/theme";
+import { useTranslation } from "../i18n"; // frontend/i18n/index.ts
 
 type OrderPayload = {
-  name: string;
-  phone: string;
-  comment?: string;
+  projectName: string;
+  shortDescription: string;
+  technicalSpec: string;
+  timeline: string;
+  telegram: string;
+  promo: string;
+  email: string;
+  message: string;
 };
 
+const ring = "0 0 0 4px rgba(255,255,255,0.08)"; // еле-еле свечение
+
 export default function OrderForm() {
-  const [form, setForm] = useState<OrderPayload>({ name: "", phone: "", comment: "" });
+  const { t } = useTranslation();
+  const [form, setForm] = useState<OrderPayload>({
+    projectName: "",
+    shortDescription: "",
+    technicalSpec: "",
+    timeline: "",
+    telegram: "",
+    promo: "",
+    email: "",
+    message: "",
+  });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
-  async function submitOrder(e: React.FormEvent) {
+  function validateForm() {
+    const errors: string[] = [];
+    
+    if (!form.telegram.trim()) {
+      errors.push(t("order.form.telegram") + " " + t("order.validation.required"));
+    }
+    
+    if (!form.projectName.trim()) {
+      errors.push(t("order.form.projectName") + " " + t("order.validation.required"));
+    }
+    
+    if (!form.shortDescription.trim()) {
+      errors.push(t("order.form.shortDescription") + " " + t("order.validation.required"));
+    }
+    
+    if (!form.technicalSpec.trim()) {
+      errors.push(t("order.form.technicalSpec") + " " + t("order.validation.required"));
+    }
+    
+    if (!form.timeline.trim()) {
+      errors.push(t("order.form.timeline") + " " + t("order.validation.required"));
+    }
+    
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errors.push(t("order.validation.emailInvalid"));
+    }
+    
+    return errors;
+  }
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const errors = validateForm();
+    
+    if (errors.length > 0) {
+      setError(errors.join(", "));
+      return;
+    }
+    
+    setShowConfirmation(true);
+  }
+
+  async function confirmSubmit() {
+    if (!agreed) {
+      setError(t("order.validation.agreementRequired"));
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     setSuccess(null);
+    setShowConfirmation(false);
+    
     try {
       const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Не удалось отправить заказ");
-      setSuccess("Заявка отправлена! Мы свяжемся с вами.");
-      setForm({ name: "", phone: "", comment: "" });
+      if (!res.ok) throw new Error("error");
+      setSuccess("ok");
+      setForm({
+        projectName: "",
+        shortDescription: "",
+        technicalSpec: "",
+        timeline: "",
+        telegram: "",
+        promo: "",
+        email: "",
+        message: "",
+      });
+      setAgreed(false);
     } catch (err: any) {
-      setError(err.message || "Ошибка отправки");
+      setError("error");
     } finally {
       setLoading(false);
     }
   }
 
+  const baseInputStyle: React.CSSProperties = {
+    background: theme.colors.muted,
+    border: `1px solid ${theme.colors.border}`,
+    color: theme.colors.foreground,
+    borderRadius: "16px", // больше радиус
+    transition: "box-shadow .2s ease, border-color .2s ease",
+    outline: "none",
+  };
+
+  const onFocus = (el: HTMLElement) => {
+    el.style.boxShadow = ring;
+    el.style.borderColor = theme.colors.mutedForeground;
+  };
+  const onBlur = (el: HTMLElement) => {
+    el.style.boxShadow = "none";
+    el.style.borderColor = theme.colors.border;
+  };
+
   return (
-    <form onSubmit={submitOrder} className="space-y-4 max-w-md mx-auto">
-      <div>
-        <label className="block text-sm mb-1" style={{ color: theme.colors.mutedForeground }}>Имя</label>
-        <input
-          className="w-full px-3 py-2 rounded"
-          style={{
-            background: theme.colors.muted,
-            border: `1px solid ${theme.colors.border}`,
-            color: theme.colors.foreground,
-          }}
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm mb-1" style={{ color: theme.colors.mutedForeground }}>Телефон</label>
-        <input
-          className="w-full px-3 py-2 rounded"
-          style={{
-            background: theme.colors.muted,
-            border: `1px solid ${theme.colors.border}`,
-            color: theme.colors.foreground,
-          }}
-          value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm mb-1" style={{ color: theme.colors.mutedForeground }}>Комментарий</label>
-        <textarea
-          className="w-full px-3 py-2 rounded"
-          style={{
-            background: theme.colors.muted,
-            border: `1px solid ${theme.colors.border}`,
-            color: theme.colors.foreground,
-          }}
-          value={form.comment}
-          onChange={(e) => setForm({ ...form, comment: e.target.value })}
-          rows={3}
-        />
-      </div>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto">
+      {/* Telegram - moved to top */}
+      <Field
+        label={t("order.form.telegram")}
+        required
+        input={
+          <input
+            className="w-full px-3 py-2 rounded-2xl"
+            style={baseInputStyle}
+            value={form.telegram}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, telegram: e.target.value })}
+            placeholder={t("order.form.telegram_ph")}
+          />
+        }
+      />
+
+      {/* Название проекта */}
+      <Field
+        label={t("order.form.projectName")}
+        required
+        input={
+          <input
+            className="w-full px-3 py-2 rounded-2xl"
+            style={baseInputStyle}
+            value={form.projectName}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, projectName: e.target.value })}
+            placeholder={t("order.form.projectName_ph")}
+          />
+        }
+      />
+
+      {/* Краткое описание проекта */}
+      <Field
+        label={t("order.form.shortDescription")}
+        required
+        input={
+          <textarea
+            className="w-full px-3 py-2 rounded-2xl resize-none"
+            style={baseInputStyle}
+            rows={3}
+            value={form.shortDescription}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, shortDescription: e.target.value })}
+            placeholder={t("order.form.shortDescription_ph")}
+          />
+        }
+      />
+
+      {/* Техническое задание */}
+      <Field
+        label={t("order.form.technicalSpec")}
+        required
+        input={
+          <textarea
+            className="w-full px-3 py-2 rounded-2xl resize-none"
+            style={baseInputStyle}
+            rows={5}
+            value={form.technicalSpec}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, technicalSpec: e.target.value })}
+            placeholder={t("order.form.technicalSpec_ph")}
+          />
+        }
+      />
+
+      {/* Сроки выполнения заказа */}
+      <Field
+        label={t("order.form.timeline")}
+        input={
+          <input
+            className="w-full px-3 py-2 rounded-2xl"
+            style={baseInputStyle}
+            value={form.timeline}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, timeline: e.target.value })}
+            placeholder={t("order.form.timeline_ph")}
+          />
+        }
+      />
+
+
+      {/* Промокод */}
+      <Field
+        label={t("order.form.promo")}
+        input={
+          <input
+            className="w-full px-3 py-2 rounded-2xl"
+            style={baseInputStyle}
+            value={form.promo}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, promo: e.target.value })}
+            placeholder={t("order.form.promo_ph")}
+          />
+        }
+      />
+
+      {/* Почта */}
+      <Field
+        label={t("order.form.email")}
+        input={
+          <input
+            type="email"
+            className="w-full px-3 py-2 rounded-2xl"
+            style={baseInputStyle}
+            value={form.email}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            placeholder={t("order.form.email_ph")}
+          />
+        }
+      />
+
+      {/* Сообщение */}
+      <Field
+        label={t("order.form.message")}
+        input={
+          <textarea
+            className="w-full px-3 py-2 rounded-2xl resize-none"
+            style={baseInputStyle}
+            rows={4}
+            value={form.message}
+            onFocus={(e) => onFocus(e.currentTarget)}
+            onBlur={(e) => onBlur(e.currentTarget)}
+            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            placeholder={t("order.form.message_ph")}
+          />
+        }
+      />
+
       <button
         type="submit"
         disabled={loading}
-        className="w-full px-4 py-2 rounded font-semibold transition disabled:opacity-60"
+        className="w-full px-4 py-2 rounded-2xl font-semibold transition disabled:opacity-60"
         style={{
           border: `1px solid ${theme.colors.mutedForeground}`,
           color: theme.colors.mutedForeground,
           background: "transparent",
         }}
         onMouseEnter={(e) => {
-          const el = e.currentTarget
-          el.style.background = theme.colors.muted
-          el.style.color = theme.colors.foreground
-          el.style.boxShadow = theme.shadow.soft
+          const el = e.currentTarget;
+          el.style.background = theme.colors.muted;
+          el.style.color = theme.colors.foreground;
+          el.style.boxShadow = theme.shadow?.soft || "0 6px 20px rgba(0,0,0,0.25)";
         }}
         onMouseLeave={(e) => {
-          const el = e.currentTarget
-          el.style.background = "transparent"
-          el.style.color = theme.colors.mutedForeground
-          el.style.boxShadow = "none"
+          const el = e.currentTarget;
+          el.style.background = "transparent";
+          el.style.color = theme.colors.mutedForeground;
+          el.style.boxShadow = "none";
         }}
       >
-        {loading ? "Отправка..." : "Отправить заявку"}
+        {loading ? t("order.form.submitting") : t("order.form.submit")}
       </button>
-      {success && <p className="text-sm" style={{ color: "#22c55e" }}>{success}</p>}
+      {success && <p className="text-sm" style={{ color: "#22c55e" }}>{t("order.form.success")}</p>}
       {error && <p className="text-sm" style={{ color: "#ef4444" }}>{error}</p>}
     </form>
+
+    {/* Confirmation Dialog */}
+    <AnimatePresence>
+      {showConfirmation && (
+        <motion.div 
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{
+            background: "rgba(0, 0, 0, 0.3)",
+            backdropFilter: "blur(8px)",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div 
+            className="rounded-2xl p-8 max-w-4xl mx-4 relative"
+            style={{ 
+              background: "rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(20px)",
+              border: `1px solid rgba(255, 255, 255, 0.2)`,
+              color: theme.colors.foreground,
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
+            }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowConfirmation(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full transition"
+              style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                border: `1px solid rgba(255, 255, 255, 0.2)`,
+                color: theme.colors.mutedForeground,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h3 className="text-xl font-semibold mb-6 pr-8 text-center" style={{ color: theme.colors.foreground }}>
+              {t("order.confirmation.title")}
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Left side - Data confirmation */}
+              <div>
+                <h4 className="text-lg font-medium mb-4" style={{ color: theme.colors.foreground }}>
+                  {t("order.confirmation.dataTitle")}
+                </h4>
+                <div 
+                  className="p-4 rounded-xl"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: `1px solid rgba(255, 255, 255, 0.1)`,
+                  }}
+                >
+                  <div className="space-y-3">
+                    <div>
+                      <strong>{t("order.form.telegram")}:</strong> {form.telegram}
+                    </div>
+                    <div>
+                      <strong>{t("order.form.projectName")}:</strong> {form.projectName}
+                    </div>
+                    <div>
+                      <strong>{t("order.form.shortDescription")}:</strong> {form.shortDescription}
+                    </div>
+                    <div>
+                      <strong>{t("order.form.timeline")}:</strong> {form.timeline}
+                    </div>
+                    {form.email && (
+                      <div>
+                        <strong>{t("order.form.email")}:</strong> {form.email}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right side - Telegram notification info */}
+              <div>
+                <h4 className="text-lg font-medium mb-4" style={{ color: theme.colors.foreground }}>
+                  {t("order.confirmation.notificationTitle")}
+                </h4>
+                <div 
+                  className="p-4 rounded-xl"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: `1px solid rgba(255, 255, 255, 0.1)`,
+                  }}
+                >
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ background: theme.colors.accent }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white">
+                        <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-medium" style={{ color: theme.colors.foreground }}>
+                        {t("order.confirmation.telegramTitle")}
+                      </div>
+                      <div className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                        {t("order.confirmation.telegramSubtitle")}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm" style={{ color: theme.colors.mutedForeground }}>
+                    <div>• {t("order.confirmation.notification1")}</div>
+                    <div>• {t("order.confirmation.notification2")}</div>
+                    <div>• {t("order.confirmation.notification3")}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center space-x-3 mb-6">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  id="agreement"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="w-5 h-5 rounded-md opacity-0 absolute"
+                  style={{ 
+                    accentColor: theme.colors.accent,
+                  }}
+                />
+                <div 
+                  className="w-5 h-5 rounded-md border-2 flex items-center justify-center transition"
+                  style={{
+                    borderColor: agreed ? theme.colors.accent : theme.colors.border,
+                    background: agreed ? theme.colors.accent : "transparent",
+                  }}
+                >
+                  {agreed && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <label htmlFor="agreement" className="text-sm cursor-pointer" style={{ color: theme.colors.mutedForeground }}>
+                {t("order.confirmation.agreement")}
+              </label>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                onClick={confirmSubmit}
+                disabled={!agreed || loading}
+                className="px-12 py-4 rounded-xl font-semibold transition disabled:opacity-50"
+                style={{
+                  border: `1px solid ${theme.colors.mutedForeground}`,
+                  color: theme.colors.mutedForeground,
+                  background: "transparent",
+                }}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.background = theme.colors.muted;
+                    e.currentTarget.style.color = theme.colors.foreground;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!e.currentTarget.disabled) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = theme.colors.mutedForeground;
+                  }
+                }}
+              >
+                {loading ? t("order.form.submitting") : t("order.confirmation.confirm")}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 }
 
-
+function Field({
+  label,
+  input,
+  required,
+}: {
+  label: string;
+  input: React.ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-sm mb-1" style={{ color: theme.colors.mutedForeground }}>
+        {label} {required ? "*" : ""}
+      </label>
+      {input}
+    </div>
+  );
+}
