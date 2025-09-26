@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import theme from "@/themes/theme";
 import { useAuth } from "@/context/AuthContext";
+import { ProductsIcon, AddIcon, EditIcon, DeleteIcon, PackageIcon } from "@/components/Icons";
 
 interface Product {
   id: number;

@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import theme from "@/themes/theme";
 import { useAuth } from "@/context/AuthContext";
+import { OrdersIcon, PhoneIcon, CalendarIcon, DeleteIcon, EditIcon, RefreshIcon, UserIcon, MailIcon, MessageIcon, ClockIcon } from "@/components/Icons";
+import { StatusSelector } from "@/components/StatusSelector";
 
 interface Order {
   id: number;
@@ -30,6 +32,8 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchOrders();
+    // Scroll to top when page loads
+    window.scrollTo(0, 0);
   }, []);
 
   const fetchOrders = async () => {
@@ -55,9 +59,18 @@ export default function AdminOrders() {
   const deleteOrder = async (id: number) => {
     if (!confirm('Are you sure you want to delete this order?')) return;
     
+    if (!token) {
+      setError('No authentication token available');
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/orders/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
       if (!response.ok) throw new Error('Failed to delete order');
       setOrders(orders.filter(order => order.id !== id));
@@ -67,10 +80,18 @@ export default function AdminOrders() {
   };
 
   const updateOrderStatus = async (id: number, status: string) => {
+    if (!token) {
+      setError('No authentication token available');
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/orders/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ status }),
       });
       if (!response.ok) throw new Error('Failed to update status');
@@ -240,49 +261,42 @@ export default function AdminOrders() {
                         {order.short_description}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
+                        <div className="flex items-center">
+                          <PhoneIcon className="mr-2" size={16} />
                           <span className="font-medium" style={{ color: theme.colors.foreground }}>Telegram:</span>
                           <span className="ml-2" style={{ color: theme.colors.mutedForeground }}>{order.telegram}</span>
                         </div>
                         {order.email && (
-                          <div>
+                          <div className="flex items-center">
+                            <MailIcon className="mr-2" size={16} />
                             <span className="font-medium" style={{ color: theme.colors.foreground }}>Email:</span>
                             <span className="ml-2" style={{ color: theme.colors.mutedForeground }}>{order.email}</span>
                           </div>
                         )}
-                        <div>
+                        <div className="flex items-center">
+                          <ClockIcon className="mr-2" size={16} />
                           <span className="font-medium" style={{ color: theme.colors.foreground }}>Timeline:</span>
                           <span className="ml-2" style={{ color: theme.colors.mutedForeground }}>{order.timeline}</span>
                         </div>
-                        <div>
+                        <div className="flex items-center">
+                          <CalendarIcon className="mr-2" size={16} />
                           <span className="font-medium" style={{ color: theme.colors.foreground }}>Created:</span>
                           <span className="ml-2" style={{ color: theme.colors.mutedForeground }}>{formatDate(order.created_at)}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      <select
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        className="px-3 py-2 rounded-lg text-sm border"
-                        style={{ 
-                          background: theme.colors.background,
-                          borderColor: theme.colors.border,
-                          color: theme.colors.foreground 
-                        }}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
+                      <StatusSelector
+                        currentStatus={order.status}
+                        onStatusChange={(status) => updateOrderStatus(order.id, status)}
+                      />
                       <button
                         onClick={() => deleteOrder(order.id)}
                         className="p-2 rounded-lg hover:bg-red-100 transition-colors"
                         style={{ color: '#ef4444' }}
                         title="Delete order"
                       >
-                        🗑️
+                        <DeleteIcon size={16} />
                       </button>
                     </div>
                   </div>

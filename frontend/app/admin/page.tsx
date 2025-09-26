@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import theme from "@/themes/theme";
 import { useAuth } from "@/context/AuthContext";
+import { DashboardIcon, OrdersIcon, ProductsIcon, PhoneIcon, CalendarIcon, DeleteIcon } from "@/components/Icons";
+import { StatusSelector } from "@/components/StatusSelector";
 
 interface Order {
   id: number;
@@ -26,6 +28,8 @@ export default function AdminDashboard() {
     if (token) {
       fetchOrders();
     }
+    // Scroll to top when page loads
+    window.scrollTo(0, 0);
   }, [token]);
 
   const fetchOrders = async () => {
@@ -57,9 +61,18 @@ export default function AdminDashboard() {
   const deleteOrder = async (id: number) => {
     if (!confirm('Are you sure you want to delete this order?')) return;
     
+    if (!token) {
+      setError('No authentication token available');
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/orders/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
       if (!response.ok) throw new Error('Failed to delete order');
       setOrders(orders.filter(order => order.id !== id));
@@ -69,10 +82,18 @@ export default function AdminDashboard() {
   };
 
   const updateOrderStatus = async (id: number, status: string) => {
+    if (!token) {
+      setError('No authentication token available');
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/orders/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ status }),
       });
       if (!response.ok) throw new Error('Failed to update status');
@@ -151,7 +172,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.2 }}
             className="lg:col-span-1"
           >
-            <div className="space-y-4">
+            <div className="space-y-12">
               <Link href="/admin/orders">
                 <div 
                   className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
@@ -161,7 +182,8 @@ export default function AdminDashboard() {
                   }}
                 >
                   <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
-                    📋 Orders
+                    <OrdersIcon className="mr-2" size={20} />
+                    Orders
                   </h3>
                   <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
                     View and manage all orders
@@ -181,7 +203,8 @@ export default function AdminDashboard() {
                   }}
                 >
                   <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
-                    🛍️ Products
+                    <ProductsIcon className="mr-2" size={20} />
+                    Products
                   </h3>
                   <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
                     Manage product catalog
@@ -237,35 +260,26 @@ export default function AdminDashboard() {
                           </p>
                           <div className="flex items-center gap-4 mt-2 text-xs">
                             <span style={{ color: theme.colors.mutedForeground }}>
-                              📱 {order.telegram}
+                              <PhoneIcon className="inline mr-1" size={16} />
+                              {order.telegram}
                             </span>
                             <span style={{ color: theme.colors.mutedForeground }}>
-                              📅 {formatDate(order.created_at)}
+                              <CalendarIcon className="inline mr-1" size={16} />
+                              {formatDate(order.created_at)}
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <select
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                            className="px-3 py-1 rounded-lg text-sm border"
-                            style={{ 
-                              background: theme.colors.background,
-                              borderColor: theme.colors.border,
-                              color: theme.colors.foreground 
-                            }}
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
+                          <StatusSelector
+                            currentStatus={order.status}
+                            onStatusChange={(status) => updateOrderStatus(order.id, status)}
+                          />
                           <button
                             onClick={() => deleteOrder(order.id)}
                             className="p-2 rounded-lg hover:bg-red-100 transition-colors"
                             style={{ color: '#ef4444' }}
                           >
-                            🗑️
+                            <DeleteIcon size={16} />
                           </button>
                         </div>
                       </div>
