@@ -9,6 +9,11 @@ import { useTranslation, type Locale } from "@/i18n";
 export default function SiteHeader() {
   const pathname = usePathname();
   const { t, locale, setLocale } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { href: "/", label: t("nav.home") },
@@ -29,7 +34,7 @@ export default function SiteHeader() {
     >
       <div className="mx-auto flex items-center justify-between px-8" style={{ maxWidth: "1200px" }}>
         <nav className="flex items-center gap-6 py-4">
-          {navItems.map((item) => {
+          {mounted && navItems.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
@@ -43,7 +48,7 @@ export default function SiteHeader() {
             );
           })}
         </nav>
-        <LanguagePopover current={locale} onSelect={setLocale} />
+        {mounted && <LanguagePopover current={locale} onSelect={setLocale} />}
       </div>
     </header>
   );

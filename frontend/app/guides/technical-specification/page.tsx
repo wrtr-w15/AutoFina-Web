@@ -70,6 +70,7 @@ export default function TechnicalSpecificationGuide() {
                 <div className="space-y-4" style={{ color: theme.colors.mutedForeground }}>
                   <p>{t("guides.technicalSpec.section1.content1")}</p>
                   <p>{t("guides.technicalSpec.section1.content2")}</p>
+                  <p>{t("guides.technicalSpec.section1.content3")}</p>
                 </div>
               </motion.div>
 
@@ -99,12 +100,6 @@ export default function TechnicalSpecificationGuide() {
                     </h3>
                     <p>{t("guides.technicalSpec.section2.item2.content")}</p>
                   </div>
-                  <div>
-                    <h3 className="font-medium mb-2" style={{ color: theme.colors.foreground }}>
-                      {t("guides.technicalSpec.section2.item3.title")}
-                    </h3>
-                    <p>{t("guides.technicalSpec.section2.item3.content")}</p>
-                  </div>
                 </div>
               </motion.div>
 
@@ -122,19 +117,20 @@ export default function TechnicalSpecificationGuide() {
                   {t("guides.technicalSpec.section3.title")}
                 </h2>
                 <div className="space-y-4" style={{ color: theme.colors.mutedForeground }}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
-                      <h4 className="font-medium mb-2" style={{ color: theme.colors.foreground }}>
-                        {t("guides.technicalSpec.section3.example1.title")}
-                      </h4>
-                      <p className="text-sm">{t("guides.technicalSpec.section3.example1.content")}</p>
-                    </div>
-                    <div className="p-4 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
-                      <h4 className="font-medium mb-2" style={{ color: theme.colors.foreground }}>
-                        {t("guides.technicalSpec.section3.example2.title")}
-                      </h4>
-                      <p className="text-sm">{t("guides.technicalSpec.section3.example2.content")}</p>
-                    </div>
+                  <div>
+                    <h3 className="font-medium mb-2" style={{ color: theme.colors.foreground }}>
+                      {t("guides.technicalSpec.section3.item1.title")}
+                    </h3>
+                    <p>{t("guides.technicalSpec.section3.item1.content")}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2" style={{ color: theme.colors.foreground }}>
+                      {t("guides.technicalSpec.section3.item2.title")}
+                    </h3>
+                    <p>{t("guides.technicalSpec.section3.item2.content")}</p>
+                  </div>
+                  <div className="p-4 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
+                    <p className="text-sm">{t("guides.technicalSpec.section3.example")}</p>
                   </div>
                 </div>
               </motion.div>
@@ -155,8 +151,32 @@ export default function TechnicalSpecificationGuide() {
                 <div className="space-y-4" style={{ color: theme.colors.mutedForeground }}>
                   <p>{t("guides.technicalSpec.section4.content")}</p>
                   <div className="p-4 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
+                    <p className="text-sm">{t("guides.technicalSpec.section4.example")}</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="p-6 rounded-2xl"
+                style={{
+                  background: theme.colors.card,
+                  border: `1px solid ${theme.colors.border}`,
+                }}
+              >
+                <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.colors.foreground }}>
+                  {t("guides.technicalSpec.section5.title")}
+                </h2>
+                <div className="space-y-4" style={{ color: theme.colors.mutedForeground }}>
+                  <p>{t("guides.technicalSpec.section5.content")}</p>
+                  <div className="p-4 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
+                    <p className="text-sm">{t("guides.technicalSpec.section5.example")}</p>
+                  </div>
+                  <div className="p-4 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
                     <p className="text-sm font-medium" style={{ color: theme.colors.foreground }}>
-                      💡 {t("guides.technicalSpec.section4.tip")}
+                      💡 {t("guides.technicalSpec.section5.tip")}
                     </p>
                   </div>
                 </div>

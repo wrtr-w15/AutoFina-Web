@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import theme from "../themes/theme"
 import { getDictionary } from "../i18n"
 import LanguagePopover from "../components/LanguagePopover"
+import ProjectsCarousel from "../components/ProjectsCarousel"
 
 export default function Home() {
   const [locale, setLocale] = useState<'ru' | 'en' | 'uk'>('ru')
@@ -52,8 +53,8 @@ export default function Home() {
       const blurElement = document.getElementById('background-blur')
       
       if (blurElement) {
-        // Calculate blur intensity based on scroll position
-        const blurIntensity = Math.min(scrollY / (heroHeight * 0.5), 8) // Max blur of 8px
+        // Calculate blur intensity based on scroll position - increased blur
+        const blurIntensity = Math.min(scrollY / (heroHeight * 0.3), 15) // Max blur of 15px
         blurElement.style.filter = `blur(${blurIntensity}px)`
       }
     }
@@ -193,7 +194,7 @@ export default function Home() {
       {/* SERVICES */}
       <section id="services" className="relative px-6 py-24">
         <div style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}>
-          <h2 data-reveal className="text-3xl sm:text-4xl font-bold mb-10">
+          <h2 data-reveal className="text-3xl sm:text-4xl font-bold mb-10 text-center">
             {dict.sections.services}
           </h2>
 
@@ -202,7 +203,7 @@ export default function Home() {
               <article
                 key={i}
                 data-reveal
-                className="relative overflow-hidden rounded-2xl p-6"
+                className="relative overflow-hidden rounded-2xl p-8 min-h-[320px] flex flex-col"
                 style={{
                   background: `linear-gradient(180deg, ${theme.colors.card} 0%, ${theme.colors.muted} 100%)`,
                   boxShadow: theme.shadow.soft,
@@ -217,52 +218,103 @@ export default function Home() {
                     background: `radial-gradient(600px 200px at 20% 0%, ${theme.colors.glowFrom}, transparent 70%)`,
                   }}
                 />
-                <h3 className="relative text-xl font-semibold">{card.title}</h3>
-                <p
-                  className="relative mt-3 leading-relaxed"
-                  style={{ color: theme.colors.mutedForeground }}
-                >
-                  {card.desc}
-                </p>
+                <div className="relative flex flex-col h-full">
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-semibold mb-4">{card.title}</h3>
+                    <p
+                      className="mb-6 leading-relaxed"
+                      style={{ color: theme.colors.mutedForeground }}
+                    >
+                      {card.desc}
+                    </p>
+                  </div>
+                  <div className="space-y-3 mt-auto">
+                    <h4 className="text-sm font-medium" style={{ color: theme.colors.foreground }}>
+                      Преимущества:
+                    </h4>
+                    <ul className="space-y-2">
+                      {card.benefits.map((benefit, benefitIndex) => (
+                        <li key={benefitIndex} className="flex items-start gap-2">
+                          <div className="mt-1 flex-shrink-0">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              style={{ color: theme.colors.accent }}
+                            >
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                          </div>
+                          <span className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                            {benefit}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="px-6 pb-28">
+      {/* PROJECTS CAROUSEL */}
+      <section id="projects" className="px-6 pb-28">
         <div style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}>
-          <h2 data-reveal className="text-3xl sm:text-4xl font-bold mb-10">
-            {dict.sections.faq}
+          <h2 data-reveal className="text-3xl sm:text-4xl font-bold mb-10 text-center">
+            {dict.sections.projects}
           </h2>
 
-          <div className="space-y-4">
-            {dict.home.faq.items.map((item, i) => (
-              <details
-                key={i}
-                data-reveal
-                className="group rounded-xl p-5"
-                style={{
-                  background: theme.colors.card,
-                  border: `1px solid ${theme.colors.border}`,
-                  transitionDelay: `${i * 90}ms`,
-                }}
-              >
-                <summary className="cursor-pointer select-none list-none text-lg font-medium">
-                  <span className="inline-flex items-center gap-2" style={{ color: theme.colors.foreground }}>
-                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: theme.colors.accent }} />
-                    {item.q}
-                  </span>
-                </summary>
-                <p className="mt-3 pl-4" style={{ color: theme.colors.mutedForeground }}>
-                  {item.a}
-                </p>
-              </details>
-            ))}
-          </div>
+          <ProjectsCarousel projects={dict.home.projects} />
         </div>
       </section>
+
+      {/* FOOTER */}
+      <footer className="px-6 py-8 border-t" style={{ borderColor: theme.colors.border }}>
+        <div style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+              © 2024 AutoFina. All rights reserved.
+            </div>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://t.me/autofina"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 transition hover:scale-110"
+                style={{
+                  color: theme.colors.mutedForeground,
+                }}
+                aria-label="Telegram"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16l-1.61 7.59c-.12.54-.44.67-.89.42l-2.46-1.81-1.19 1.15c-.13.13-.24.24-.49.24l.18-2.56 4.57-4.13c.2-.18-.04-.28-.31-.1l-5.64 3.55-2.43-.76c-.53-.16-.54-.53.11-.79l9.57-3.69c.44-.16.83.1.68.79z"/>
+                </svg>
+              </a>
+              <a
+                href="https://discord.gg/autofina"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 transition hover:scale-110"
+                style={{
+                  color: theme.colors.mutedForeground,
+                }}
+                aria-label="Discord"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }

@@ -7,7 +7,7 @@
   },
   "sections": {
     "services": "Our services",
-    "faq": "FAQ"
+    "projects": "Our Projects"
   },
   "nav": {
     "home": "Home",
@@ -48,7 +48,9 @@
     "validation": {
       "required": "is required",
       "emailInvalid": "Invalid email format",
-      "agreementRequired": "You must agree to the terms"
+      "agreementRequired": "You must agree to the terms",
+      "rateLimit": "Too frequent submissions. Try again in",
+      "minutes": "minutes"
     },
     "confirmation": {
       "title": "Confirm Order",
@@ -63,7 +65,20 @@
       "termsLink": "terms and conditions",
       "cancel": "Cancel",
       "confirm": "Confirm"
+    },
+    "success": {
+      "title": "Order Submitted!",
+      "message": "We received your order and will contact you soon."
+    },
+    "error": {
+      "title": "Submission Error"
     }
+  },
+  "404": {
+    "title": "Page Not Found",
+    "message": "Sorry, the page you are looking for does not exist or has been moved.",
+    "backHome": "Back to Home",
+    "orderNow": "Place Order"
   },
   "home": {
     "hero": {
@@ -74,38 +89,63 @@
       "cards": [
         {
           "title": "Scripts & integrations",
-          "desc": "Data parsing, routine automation, API integrations. Fast and reliable."
+          "desc": "Data parsing, routine automation, API integrations. Fast and reliable.",
+          "benefits": [
+            "Save up to 80% time",
+            "Integration with any API",
+            "Anti-detection technology",
+            "24/7 support"
+          ]
         },
         {
           "title": "n8n automation",
-          "desc": "From idea to pipeline: processing, AI agents, Google Sheets/Drive, webhooks."
+          "desc": "From idea to pipeline: processing, AI agents, Google Sheets/Drive, webhooks.",
+          "benefits": [
+            "50+ ready integrations",
+            "Visual constructor",
+            "AI agents & processing",
+            "Scalability"
+          ]
         },
         {
           "title": "Web / Telegram",
-          "desc": "Landing pages, widgets, bots. Thoughtful UX and payment/CRM integrations."
+          "desc": "Landing pages, widgets, bots. Thoughtful UX and payment/CRM integrations.",
+          "benefits": [
+            "Modern design",
+            "Mobile adaptation",
+            "CRM integration",
+            "Analytics & metrics"
+          ]
         }
       ]
     },
-    "faq": {
-      "items": [
-        {
-          "q": "How do we start a project?",
-          "a": "Short call/chat → brief → timing/cost estimate → development sprints → release."
-        },
-        {
-          "q": "Timelines?",
-          "a": "MVP usually 3–10 days. Depends on integrations and logic volume."
-        },
-        {
-          "q": "Stack?",
-          "a": "Next.js/React, Tailwind, n8n, Telegram Bot API, Node.js, Postgres/MySQL, GSheets/Drive."
-        },
-        {
-          "q": "Payment?",
-          "a": "Fixed per sprint or hourly. Milestones and post‑payment after demos are possible."
-        }
-      ]
-    },
+    "projects": [
+      {
+        "title": "Telegram Auto-posting",
+        "description": "Automated content publishing to multiple channels with scheduling and analytics",
+        "technologies": ["Telegram API", "Node.js", "PostgreSQL", "Cron Jobs"]
+      },
+      {
+        "title": "Web3 Trading Bot",
+        "description": "Automated DEX trading with multi-chain support and advanced algorithms",
+        "technologies": ["Web3.js", "Ethereum", "Binance Smart Chain", "Trading Algorithms"]
+      },
+      {
+        "title": "n8n Automation",
+        "description": "Comprehensive business process automation with 50+ service integrations",
+        "technologies": ["n8n", "Webhooks", "Google Sheets", "Slack API"]
+      },
+      {
+        "title": "Data Scraping",
+        "description": "Web data collection and processing with anti-detection technologies",
+        "technologies": ["Puppeteer", "Proxy", "Captcha Solving", "Data Processing"]
+      },
+      {
+        "title": "CRM Integration",
+        "description": "Connecting CRM systems with external services for sales automation",
+        "technologies": ["REST API", "Webhooks", "Database Sync", "Real-time Updates"]
+      }
+    ],
     "back_to_top": "Back to top"
   },
   "shop": {
@@ -151,40 +191,28 @@
     ]
   },
   "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Find answers to common questions about our services",
+    "title": "General Terms",
+    "subtitle": "AutoFina service terms and conditions",
     "questions": [
       {
-        "q": "How do we start a project?",
-        "a": "Short call/chat → brief → timing/cost estimate → development sprints → release."
+        "q": "General Terms",
+        "a": "• Refunds are only possible if the order is not completed.\n• Active Afina license is required for operation — launch is impossible without it.\n• 100% prepayment is mandatory before starting the order.\n• Consultant may refuse to fulfill the order."
       },
       {
-        "q": "What are the typical timelines?",
-        "a": "MVP usually takes 3–10 days. Depends on integrations and logic volume."
+        "q": "Payment and Transfer",
+        "a": "• Payment only to the address specified by the consultant — strictly follow the network.\n• After payment, you need to send the transaction hash or screenshot.\n• Refund is impossible after transferring the ready script."
       },
       {
-        "q": "What technologies do you use?",
-        "a": "Next.js/React, Tailwind, n8n, Telegram Bot API, Node.js, Postgres/MySQL, GSheets/Drive."
+        "q": "Support",
+        "a": "• AutoFina supports the script until campaign completion (bug fixes, UI changes, etc.).\n• Support does not include adaptation to new projects.\n• Unauthorized script modification forfeits support rights.\n• All questions — only through the official consultant."
       },
       {
-        "q": "How do you handle payments?",
-        "a": "Fixed per sprint or hourly. Milestones and post-payment after demos are possible."
+        "q": "Changes and Rights",
+        "a": "• Global changes not specified in the TS are paid separately.\n• AutoFina may use the ready script as a template if exclusivity is not agreed upon.\n• Transferring the script to third parties without agreement is prohibited.\n• Rule violations lead to support termination without compensation."
       },
       {
-        "q": "Do you provide support after delivery?",
-        "a": "Yes, we offer 30 days of free support for bug fixes and minor adjustments."
-      },
-      {
-        "q": "Can you work with existing systems?",
-        "a": "Absolutely! We specialize in integrating with existing APIs, databases, and third-party services."
-      },
-      {
-        "q": "What if I need changes during development?",
-        "a": "We use agile sprints, so changes can be incorporated in the next iteration."
-      },
-      {
-        "q": "Do you sign NDAs?",
-        "a": "Yes, we're happy to sign NDAs to protect your intellectual property and business ideas."
+        "q": "Other",
+        "a": "• Deadline can be changed by agreement.\n• In case of force majeure, deadlines may shift with notification.\n• AutoFina does not guarantee drop receipt — only process automation."
       }
     ]
   },
@@ -192,43 +220,47 @@
     "backToOrder": "Back to order form",
     "formSaved": "Form progress saved",
     "technicalSpec": {
-      "title": "How to create a Technical Specification",
-      "subtitle": "A detailed guide on writing effective technical specifications for your project",
+      "title": "How to create a Technical Specification for Automation",
+      "subtitle": "AutoFina provides access to automation and custom scripts. By purchasing a script, you agree to the conditions below. Violation of rules — loss of support without compensation.",
       "section1": {
-        "title": "What is a Technical Specification?",
-        "content1": "A technical specification (TS) is a detailed document that describes the technical requirements, architecture, and implementation details of your project. It serves as a blueprint for developers and helps ensure everyone understands what needs to be built.",
-        "content2": "A well-written TS saves time, reduces misunderstandings, and helps estimate project costs and timelines more accurately."
+        "title": "Project Idea",
+        "content1": "Describe the script's purpose: what it should automate on the web (clicks, data entry, navigation, data collection).",
+        "content2": "Example: automatic token claiming on a project website with logging of all steps.",
+        "content3": "If there are references or similar solutions — add links."
       },
       "section2": {
-        "title": "What to include in your TS",
+        "title": "Functionality",
         "item1": {
-          "title": "Project Overview",
-          "content": "Brief description of what you want to build, target audience, and main goals."
+          "title": "Main Actions",
+          "content": "List the main actions in the interface: authorization, button clicks, form filling, captcha bypass, retry attempts."
         },
         "item2": {
-          "title": "Functional Requirements",
-          "content": "Detailed list of features and functionality your system should have. Be specific about user interactions, data processing, and system behavior."
-        },
-        "item3": {
-          "title": "Technical Requirements",
-          "content": "Specify technologies, platforms, integrations, performance requirements, and any technical constraints."
+          "title": "Configuration Flexibility",
+          "content": "Specify preferences for configuration flexibility: ability to change network, timings, limits, wallet list without code changes."
         }
       },
       "section3": {
-        "title": "Examples",
-        "example1": {
-          "title": "Good Example",
-          "content": "Create a user registration form with email validation, password requirements (8+ chars, special symbols), and email confirmation. Store user data in PostgreSQL database."
+        "title": "Integrations and Access",
+        "item1": {
+          "title": "Wallets and Networks",
+          "content": "Specify which wallets/networks will be used (MetaMask, OKX, Rabby, etc.)."
         },
-        "example2": {
-          "title": "Bad Example",
-          "content": "Make a form for users to sign up. It should work well and be secure."
-        }
+        "item2": {
+          "title": "API Keys and Tokens",
+          "content": "If API keys, tokens, or private endpoints are needed — prepare them in advance."
+        },
+        "example": "Example: «script interacts with the site through Owlto (EVM) for transaction confirmation»."
       },
       "section4": {
-        "title": "Tips for writing effective TS",
-        "content": "Be specific and detailed. Use clear language. Include examples and use cases. Consider edge cases and error handling. Break down complex features into smaller components.",
-        "tip": "The more detailed your specification, the more accurate our estimate will be and the faster we can start development."
+        "title": "Data Storage",
+        "content": "Determine where to store the work results: Database or Google Sheets.",
+        "example": "Example: «each successful action is recorded in Google Sheets with date, wallet, and status»."
+      },
+      "section5": {
+        "title": "Deadline and Budget",
+        "content": "Specify the desired delivery date and possible budget.",
+        "example": "Example: deadline — 7 days, budget — up to $300.",
+        "tip": "If deadlines are critical — mark this separately."
       }
     },
     "terms": {

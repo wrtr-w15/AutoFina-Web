@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import theme from "../themes/theme";
 import { useTranslation } from "../i18n"; // frontend/i18n/index.ts
+import Notification from "./Notification";
 
 type OrderPayload = {
   projectName: string;
@@ -36,6 +37,11 @@ export default function OrderForm() {
   const [error, setError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [showSuccessIcon, setShowSuccessIcon] = useState(false);
+  const [showErrorIcon, setShowErrorIcon] = useState(false);
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<number | null>(null);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
 
   // Save form data to cookies whenever it changes
   const saveFormToCookies = (formData: OrderPayload) => {
@@ -59,6 +65,12 @@ export default function OrderForm() {
         } catch (error) {
           console.error('Error parsing saved form data from cookies:', error);
         }
+      }
+
+      // Load last submission time
+      const lastSubmission = localStorage.getItem('lastOrderSubmission');
+      if (lastSubmission) {
+        setLastSubmissionTime(parseInt(lastSubmission));
       }
     }
   }, []);
@@ -103,6 +115,20 @@ export default function OrderForm() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    // Anti-DDoS check: prevent submission if less than 1 hour has passed
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+    
+    if (lastSubmissionTime && (now - lastSubmissionTime) < oneHour) {
+      const timeLeft = Math.ceil((oneHour - (now - lastSubmissionTime)) / (60 * 1000));
+      const errorMessage = `${t("order.validation.rateLimit")} ${timeLeft} ${t("order.validation.minutes")}`;
+      setRateLimitError(errorMessage);
+      setShowNotification(true);
+      setShowErrorIcon(true);
+      return;
+    }
+    
     const errors = validateForm();
     
     if (errors.length > 0) {
@@ -132,6 +158,19 @@ export default function OrderForm() {
       });
       if (!res.ok) throw new Error("error");
       setSuccess("ok");
+      setShowNotification(true);
+      
+      // Save submission time for anti-DDoS
+      const submissionTime = Date.now();
+      setLastSubmissionTime(submissionTime);
+      localStorage.setItem('lastOrderSubmission', submissionTime.toString());
+      
+      // Auto-hide notification after 10 seconds and show success icon
+      setTimeout(() => {
+        setShowNotification(false);
+        setShowSuccessIcon(true);
+      }, 10000);
+      
       setForm({
         projectName: "",
         shortDescription: "",
@@ -334,31 +373,102 @@ export default function OrderForm() {
         }
       />
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full px-4 py-2 rounded-2xl font-semibold transition disabled:opacity-60"
-        style={{
-          border: `1px solid ${theme.colors.mutedForeground}`,
-          color: theme.colors.mutedForeground,
-          background: "transparent",
-        }}
-        onMouseEnter={(e) => {
-          const el = e.currentTarget;
-          el.style.background = theme.colors.muted;
-          el.style.color = theme.colors.foreground;
-          el.style.boxShadow = theme.shadow?.soft || "0 6px 20px rgba(0,0,0,0.25)";
-        }}
-        onMouseLeave={(e) => {
-          const el = e.currentTarget;
-          el.style.background = "transparent";
-          el.style.color = theme.colors.mutedForeground;
-          el.style.boxShadow = "none";
-        }}
-      >
-        {loading ? t("order.form.submitting") : t("order.form.submit")}
-      </button>
-      {success && <p className="text-sm" style={{ color: "#22c55e" }}>{t("order.form.success")}</p>}
+      <div className="relative">
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full px-4 py-2 rounded-2xl font-semibold transition disabled:opacity-60"
+          style={{
+            border: `1px solid ${theme.colors.mutedForeground}`,
+            color: theme.colors.mutedForeground,
+            background: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget;
+            el.style.background = theme.colors.muted;
+            el.style.color = theme.colors.foreground;
+            el.style.boxShadow = theme.shadow?.soft || "0 6px 20px rgba(0,0,0,0.25)";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget;
+            el.style.background = "transparent";
+            el.style.color = theme.colors.mutedForeground;
+            el.style.boxShadow = "none";
+          }}
+        >
+          {loading ? t("order.form.submitting") : t("order.form.submit")}
+        </button>
+      
+      {/* Success Icon */}
+      {showSuccessIcon && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ 
+            duration: 0.3,
+            type: "spring",
+            stiffness: 200
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer group"
+          style={{ background: "#22c55e" }}
+          title={t("order.success.title")}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-2 px-3 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+            {t("order.success.title")}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Error Icon */}
+      {showErrorIcon && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ 
+            duration: 0.3,
+            type: "spring",
+            stiffness: 200
+          }}
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer group"
+          style={{ background: "#ef4444" }}
+          title={rateLimitError || ""}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-2 px-3 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+            {rateLimitError}
+          </div>
+        </motion.div>
+      )}
+      </div>
+      
       {error && <p className="text-sm" style={{ color: "#ef4444" }}>{error}</p>}
     </form>
 
@@ -558,6 +668,23 @@ export default function OrderForm() {
         </motion.div>
       )}
     </AnimatePresence>
+
+    {/* Notification Component */}
+    <Notification
+      show={showNotification}
+      type={showErrorIcon ? "error" : "success"}
+      title={showErrorIcon ? t("order.error.title") : t("order.success.title")}
+      message={showErrorIcon ? (rateLimitError || "") : t("order.success.message")}
+      onClose={() => {
+        setShowNotification(false);
+        if (showErrorIcon) {
+          setShowErrorIcon(false);
+          setRateLimitError(null);
+        }
+      }}
+      autoHide={!showErrorIcon}
+      duration={10000}
+    />
     </>
   );
 }
