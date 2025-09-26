@@ -24,11 +24,11 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.authService = authService;
     }
     async validate(payload) {
-        const user = await this.authService.validateToken(payload);
-        if (!user) {
+        const user = await this.authService.getUserById(payload.sub);
+        if (!user || !user.is_active) {
             throw new common_1.UnauthorizedException();
         }
-        return user;
+        return { id: user.id, username: user.username, role: user.role };
     }
 };
 exports.JwtStrategy = JwtStrategy;

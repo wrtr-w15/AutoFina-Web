@@ -7,7 +7,7 @@ import { useTranslation } from "@/i18n";
 import { motion } from "framer-motion";
 
 export default function OrderPage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   return (
     <main className="min-h-dvh px-6" style={{ background: theme.colors.background, color: theme.colors.foreground }}>
       <section className="relative flex items-center justify-center py-20">

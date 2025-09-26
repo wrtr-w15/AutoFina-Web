@@ -55,4 +55,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateOrderDto.prototype, "message", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(['personal', 'cart']),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateOrderDto.prototype, "order_type", void 0);
 //# sourceMappingURL=create-order.dto.js.map

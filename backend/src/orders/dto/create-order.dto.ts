@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, IsEmail } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsEmail, IsEnum } from 'class-validator';
 
 export class CreateOrderDto {
   @IsString()
@@ -33,4 +33,8 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   message?: string;
+
+  @IsEnum(['personal', 'cart'])
+  @IsOptional()
+  order_type?: string;
 }

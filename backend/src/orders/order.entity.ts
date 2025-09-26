@@ -31,6 +31,13 @@ export class Order {
 
   @Column({ 
     type: 'enum', 
+    enum: ['personal', 'cart'],
+    default: 'personal'
+  })
+  order_type: string;
+
+  @Column({ 
+    type: 'enum', 
     enum: ['pending', 'in_progress', 'completed', 'cancelled'],
     default: 'pending'
   })

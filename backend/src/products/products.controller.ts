@@ -1,10 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  @Get('public')
+  async findPublic() {
+    try {
+      const products = await this.productsService.findActive();
+      return {
+        success: true,
+        data: products
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to fetch products',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('public/:id')
+  async findPublicOne(@Param('id') id: string) {
+    try {
+      const product = await this.productsService.findActiveOne(+id);
+      return {
+        success: true,
+        data: product
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to fetch product',
+        error: error.message
+      };
+    }
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -50,7 +86,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@Body() createProductDto: any) {
+  async create(@Body() createProductDto: CreateProductDto) {
     try {
       const product = await this.productsService.create(createProductDto);
       return {
@@ -69,7 +105,26 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  async update(@Param('id') id: string, @Body() updateProductDto: any) {
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    try {
+      const product = await this.productsService.update(+id, updateProductDto);
+      return {
+        success: true,
+        message: 'Product updated successfully',
+        data: product
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to update product',
+        error: error.message
+      };
+    }
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  async replace(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     try {
       const product = await this.productsService.update(+id, updateProductDto);
       return {

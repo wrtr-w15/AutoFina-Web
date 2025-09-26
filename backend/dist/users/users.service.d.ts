@@ -5,6 +5,12 @@ export declare class UsersService {
     constructor(usersRepository: Repository<User>);
     findByUsername(username: string): Promise<User | undefined>;
     findById(id: number): Promise<User | undefined>;
-    create(username: string, password: string): Promise<User>;
+    create(userData: {
+        username: string;
+        password: string;
+        role?: string;
+        is_active?: boolean;
+    }): Promise<User>;
+    updatePassword(id: number, hashedPassword: string): Promise<void>;
     validatePassword(password: string, hashedPassword: string): Promise<boolean>;
 }

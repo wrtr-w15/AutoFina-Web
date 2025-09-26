@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import theme from "@/themes/theme";
 import { useAuth } from "@/context/AuthContext";
-import { DashboardIcon, OrdersIcon, ProductsIcon, PhoneIcon, CalendarIcon, DeleteIcon } from "@/components/Icons";
+import { DashboardIcon, OrdersIcon, ProductsIcon, TagIcon, PhoneIcon, CalendarIcon, DeleteIcon } from "@/components/Icons";
 import { StatusSelector } from "@/components/StatusSelector";
 
 interface Order {
@@ -208,6 +208,24 @@ export default function AdminDashboard() {
                   </h3>
                   <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
                     Manage product catalog
+                  </p>
+                </div>
+              </Link>
+
+              <Link href="/admin/categories">
+                <div 
+                  className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
+                  style={{ 
+                    background: theme.colors.card,
+                    borderColor: theme.colors.border 
+                  }}
+                >
+                  <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
+                    <TagIcon className="mr-2" size={20} />
+                    Categories
+                  </h3>
+                  <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                    Manage product categories
                   </p>
                 </div>
               </Link>

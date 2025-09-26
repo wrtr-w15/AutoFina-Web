@@ -1,5 +1,6 @@
 import './globals.css'
 import AppShell from '@/components/AppShell'
+import { CartProvider } from '@/context/CartContext'
 
 export const metadata = {
   title: 'AutoFina',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-zinc-950 text-white font-sans">
-        <AppShell>{children}</AppShell>
+        <CartProvider>
+          <AppShell>{children}</AppShell>
+        </CartProvider>
       </body>
     </html>
   )

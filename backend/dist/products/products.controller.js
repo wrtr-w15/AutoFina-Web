@@ -15,10 +15,44 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductsController = void 0;
 const common_1 = require("@nestjs/common");
 const products_service_1 = require("./products.service");
+const create_product_dto_1 = require("./dto/create-product.dto");
+const update_product_dto_1 = require("./dto/update-product.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let ProductsController = class ProductsController {
     constructor(productsService) {
         this.productsService = productsService;
+    }
+    async findPublic() {
+        try {
+            const products = await this.productsService.findActive();
+            return {
+                success: true,
+                data: products
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: 'Failed to fetch products',
+                error: error.message
+            };
+        }
+    }
+    async findPublicOne(id) {
+        try {
+            const product = await this.productsService.findActiveOne(+id);
+            return {
+                success: true,
+                data: product
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: 'Failed to fetch product',
+                error: error.message
+            };
+        }
     }
     async findAll() {
         try {
@@ -92,6 +126,23 @@ let ProductsController = class ProductsController {
             };
         }
     }
+    async replace(id, updateProductDto) {
+        try {
+            const product = await this.productsService.update(+id, updateProductDto);
+            return {
+                success: true,
+                message: 'Product updated successfully',
+                data: product
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: 'Failed to update product',
+                error: error.message
+            };
+        }
+    }
     async remove(id) {
         try {
             await this.productsService.remove(+id);
@@ -110,6 +161,19 @@ let ProductsController = class ProductsController {
     }
 };
 exports.ProductsController = ProductsController;
+__decorate([
+    (0, common_1.Get)('public'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "findPublic", null);
+__decorate([
+    (0, common_1.Get)('public/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "findPublicOne", null);
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -130,7 +194,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [create_product_dto_1.CreateProductDto]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "create", null);
 __decorate([
@@ -139,9 +203,18 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, update_product_dto_1.UpdateProductDto]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_product_dto_1.UpdateProductDto]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "replace", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

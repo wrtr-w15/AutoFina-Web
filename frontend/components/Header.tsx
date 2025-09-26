@@ -5,10 +5,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import theme from "@/themes/theme";
 import { useTranslation, type Locale } from "@/i18n";
+import { useCart } from "@/context/CartContext";
+import { ShoppingCartIcon } from "@/components/Icons";
 
 export default function SiteHeader() {
   const pathname = usePathname();
   const { t, locale, setLocale } = useTranslation();
+  const { getTotalItems } = useCart();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -18,7 +21,7 @@ export default function SiteHeader() {
   const navItems = [
     { href: "/", label: t("nav.home") },
     { href: "/order", label: t("nav.order") },
-    // { href: "/shop", label: t("nav.available") },
+    { href: "/shop", label: t("nav.available") },
     { href: "/faq", label: t("nav.faq") },
     // { href: "/guides", label: t("nav.guides") },
   ];
@@ -48,7 +51,29 @@ export default function SiteHeader() {
             );
           })}
         </nav>
-        {mounted && <LanguagePopover current={locale} onSelect={setLocale} />}
+        <div className="flex items-center gap-4">
+          {mounted && <LanguagePopover current={locale} onSelect={setLocale} />}
+          {mounted && (
+            <Link
+              href="/cart"
+              className="relative p-2 rounded-lg transition-colors hover:bg-gray-100"
+              style={{ color: theme.colors.mutedForeground }}
+            >
+              <ShoppingCartIcon size={20} />
+              {getTotalItems() > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold"
+                  style={{
+                    background: theme.colors.accent,
+                    color: theme.colors.background
+                  }}
+                >
+                  {getTotalItems()}
+                </span>
+              )}
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );

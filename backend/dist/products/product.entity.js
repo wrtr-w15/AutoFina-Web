@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Product = void 0;
 const typeorm_1 = require("typeorm");
+const category_entity_1 = require("../categories/category.entity");
 let Product = class Product {
 };
 exports.Product = Product;
@@ -23,9 +24,29 @@ __decorate([
     __metadata("design:type", String)
 ], Product.prototype, "name", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    __metadata("design:type", Object)
+], Product.prototype, "name_translations", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'text' }),
     __metadata("design:type", String)
-], Product.prototype, "description", void 0);
+], Product.prototype, "short_description", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    __metadata("design:type", Object)
+], Product.prototype, "short_description_translations", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], Product.prototype, "full_description", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    __metadata("design:type", Object)
+], Product.prototype, "full_description_translations", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'json' }),
+    __metadata("design:type", Array)
+], Product.prototype, "description_blocks", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
     __metadata("design:type", Number)
@@ -38,6 +59,15 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], Product.prototype, "is_active", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
+], Product.prototype, "category_id", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => category_entity_1.Category, category => category.products),
+    (0, typeorm_1.JoinColumn)({ name: 'category_id' }),
+    __metadata("design:type", category_entity_1.Category)
+], Product.prototype, "category", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

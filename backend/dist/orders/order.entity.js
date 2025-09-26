@@ -53,6 +53,14 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
+        enum: ['personal', 'cart'],
+        default: 'personal'
+    }),
+    __metadata("design:type", String)
+], Order.prototype, "order_type", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
         enum: ['pending', 'in_progress', 'completed', 'cancelled'],
         default: 'pending'
     }),

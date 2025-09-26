@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const orders_module_1 = require("./orders/orders.module");
 const products_module_1 = require("./products/products.module");
+const categories_module_1 = require("./categories/categories.module");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 let AppModule = class AppModule {
@@ -32,6 +33,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             orders_module_1.OrdersModule,
             products_module_1.ProductsModule,
+            categories_module_1.CategoriesModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
         ],

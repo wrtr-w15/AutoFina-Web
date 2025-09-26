@@ -50,6 +50,9 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('Invalid token');
         }
     }
+    async getUserById(id) {
+        return await this.usersService.findById(id);
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([

@@ -8,6 +8,7 @@ export declare class Order {
     promo: string;
     email: string;
     message: string;
+    order_type: string;
     status: string;
     created_at: Date;
     updated_at: Date;

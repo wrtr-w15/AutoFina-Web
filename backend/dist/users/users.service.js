@@ -28,13 +28,18 @@ let UsersService = class UsersService {
     async findById(id) {
         return this.usersRepository.findOne({ where: { id } });
     }
-    async create(username, password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
+    async create(userData) {
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
         const user = this.usersRepository.create({
-            username,
+            username: userData.username,
             password: hashedPassword,
+            role: userData.role || 'user',
+            is_active: userData.is_active !== undefined ? userData.is_active : true,
         });
         return this.usersRepository.save(user);
+    }
+    async updatePassword(id, hashedPassword) {
+        await this.usersRepository.update(id, { password: hashedPassword });
     }
     async validatePassword(password, hashedPassword) {
         return bcrypt.compare(password, hashedPassword);

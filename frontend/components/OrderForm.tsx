@@ -16,6 +16,7 @@ type OrderPayload = {
   promo: string;
   email: string;
   message: string;
+  order_type?: string;
 };
 
 const ring = "0 0 0 4px rgba(255,255,255,0.08)"; // еле-еле свечение
@@ -154,7 +155,10 @@ export default function OrderForm() {
       const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          order_type: 'personal'
+        }),
       });
       if (!res.ok) throw new Error("error");
       setSuccess("ok");

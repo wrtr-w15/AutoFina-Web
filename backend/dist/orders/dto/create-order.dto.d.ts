@@ -7,4 +7,5 @@ export declare class CreateOrderDto {
     promo?: string;
     email?: string;
     message?: string;
+    order_type?: string;
 }
