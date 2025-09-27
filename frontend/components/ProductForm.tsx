@@ -10,6 +10,12 @@ interface DescriptionBlock {
   content: string;
 }
 
+interface DescriptionBlocksTranslations {
+  en: DescriptionBlock[];
+  ru: DescriptionBlock[];
+  uk: DescriptionBlock[];
+}
+
 interface Category {
   id: number;
   name: string;
@@ -47,6 +53,7 @@ interface ProductFormProps {
     price: number;
     image_url: string;
     description_blocks: DescriptionBlock[];
+    description_blocks_translations: DescriptionBlocksTranslations;
     category_ids: number[];
     is_active: boolean;
   }) => void;
@@ -72,6 +79,7 @@ interface ProductFormProps {
     price: number;
     image_url: string;
     description_blocks: DescriptionBlock[];
+    description_blocks_translations: DescriptionBlocksTranslations;
     category_ids: number[];
     is_active: boolean;
   };
@@ -105,6 +113,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     price: initialData?.price || 0,
     image_url: initialData?.image_url || '',
     description_blocks: initialData?.description_blocks || [{ title: '', content: '' }],
+    description_blocks_translations: initialData?.description_blocks_translations || {
+      en: [{ title: '', content: '' }],
+      ru: [{ title: '', content: '' }],
+      uk: [{ title: '', content: '' }]
+    },
     category_ids: initialData?.category_ids || [],
     is_active: initialData?.is_active ?? true
   });
@@ -112,6 +125,47 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'ru' | 'uk'>('en');
   const [categories, setCategories] = useState<Category[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [savedLanguages, setSavedLanguages] = useState<Set<'en' | 'ru' | 'uk'>>(new Set());
+
+  // Update form data when initialData changes
+  React.useEffect(() => {
+    if (initialData) {
+      console.log('ProductForm: initialData received:', initialData);
+      console.log('ProductForm: name value:', initialData.name);
+      console.log('ProductForm: short_description value:', initialData.short_description);
+      console.log('ProductForm: full_description value:', initialData.full_description);
+      setFormData({
+        name: initialData.name ?? '',
+        name_translations: initialData.name_translations || {
+          en: '',
+          ru: '',
+          uk: ''
+        },
+        short_description: initialData.short_description ?? '',
+        short_description_translations: initialData.short_description_translations || {
+          en: '',
+          ru: '',
+          uk: ''
+        },
+        full_description: initialData.full_description ?? '',
+        full_description_translations: initialData.full_description_translations || {
+          en: '',
+          ru: '',
+          uk: ''
+        },
+        price: initialData.price || 0,
+        image_url: initialData.image_url || '',
+        description_blocks: initialData.description_blocks || [{ title: '', content: '' }],
+        description_blocks_translations: initialData.description_blocks_translations || {
+          en: [{ title: '', content: '' }],
+          ru: [{ title: '', content: '' }],
+          uk: [{ title: '', content: '' }]
+        },
+        category_ids: initialData.category_ids || [],
+        is_active: initialData.is_active ?? true
+      });
+    }
+  }, [initialData]);
 
   // Load categories when component mounts
   React.useEffect(() => {
@@ -135,16 +189,34 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Product name is required';
+    // Check if either name or name_translations is provided
+    const hasName = formData.name.trim() || 
+      (formData.name_translations.en.trim() || 
+       formData.name_translations.ru.trim() || 
+       formData.name_translations.uk.trim());
+    
+    if (!hasName) {
+      newErrors.name = 'Product name is required (either in default language or translations)';
     }
 
-    if (!formData.short_description.trim()) {
-      newErrors.short_description = 'Short description is required';
+    // Check if either short_description or short_description_translations is provided
+    const hasShortDescription = formData.short_description.trim() || 
+      (formData.short_description_translations.en.trim() || 
+       formData.short_description_translations.ru.trim() || 
+       formData.short_description_translations.uk.trim());
+    
+    if (!hasShortDescription) {
+      newErrors.short_description = 'Short description is required (either in default language or translations)';
     }
 
-    if (!formData.full_description.trim()) {
-      newErrors.full_description = 'Full description is required';
+    // Check if either full_description or full_description_translations is provided
+    const hasFullDescription = formData.full_description.trim() || 
+      (formData.full_description_translations.en.trim() || 
+       formData.full_description_translations.ru.trim() || 
+       formData.full_description_translations.uk.trim());
+    
+    if (!hasFullDescription) {
+      newErrors.full_description = 'Full description is required (either in default language or translations)';
     }
 
     if (formData.price <= 0) {
@@ -177,7 +249,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const addDescriptionBlock = () => {
     setFormData(prev => ({
       ...prev,
-      description_blocks: [...prev.description_blocks, { title: '', content: '' }]
+      description_blocks: [...prev.description_blocks, { title: '', content: '' }],
+      description_blocks_translations: {
+        en: [...prev.description_blocks_translations.en, { title: '', content: '' }],
+        ru: [...prev.description_blocks_translations.ru, { title: '', content: '' }],
+        uk: [...prev.description_blocks_translations.uk, { title: '', content: '' }]
+      }
     }));
   };
 
@@ -185,18 +262,66 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     if (formData.description_blocks.length > 1) {
       setFormData(prev => ({
         ...prev,
-        description_blocks: prev.description_blocks.filter((_, i) => i !== index)
+        description_blocks: prev.description_blocks.filter((_, i) => i !== index),
+        description_blocks_translations: {
+          en: prev.description_blocks_translations.en.filter((_, i) => i !== index),
+          ru: prev.description_blocks_translations.ru.filter((_, i) => i !== index),
+          uk: prev.description_blocks_translations.uk.filter((_, i) => i !== index)
+        }
       }));
     }
   };
 
   const updateDescriptionBlock = (index: number, field: 'title' | 'content', value: string) => {
+    setFormData(prev => {
+      const updatedBlocks = prev.description_blocks.map((block, i) => 
+        i === index ? { ...block, [field]: value } : block
+      );
+      
+      return {
+        ...prev,
+        description_blocks: updatedBlocks,
+        description_blocks_translations: {
+          ...prev.description_blocks_translations,
+          [activeLanguage]: updatedBlocks
+        }
+      };
+    });
+  };
+
+  const updateDescriptionBlockTranslation = (index: number, field: 'title' | 'content', value: string, language: 'en' | 'ru' | 'uk') => {
     setFormData(prev => ({
       ...prev,
-      description_blocks: prev.description_blocks.map((block, i) => 
-        i === index ? { ...block, [field]: value } : block
-      )
+      description_blocks_translations: {
+        ...prev.description_blocks_translations,
+        [language]: prev.description_blocks_translations[language].map((block, i) => 
+          i === index ? { ...block, [field]: value } : block
+        )
+      }
     }));
+  };
+
+  // Функция для переключения языка с сохранением текущих изменений
+  const handleLanguageChange = (newLanguage: 'en' | 'ru' | 'uk') => {
+    if (activeLanguage !== newLanguage) {
+      setFormData(prev => {
+        // Сохраняем текущие изменения в description_blocks перед переключением
+        const currentBlocks = prev.description_blocks_translations[activeLanguage] || prev.description_blocks;
+        
+        return {
+          ...prev,
+          description_blocks: currentBlocks,
+          description_blocks_translations: {
+            ...prev.description_blocks_translations,
+            [activeLanguage]: currentBlocks
+          }
+        };
+      });
+      
+      // Отмечаем текущий язык как сохраненный
+      setSavedLanguages(prev => new Set([...prev, activeLanguage]));
+    }
+    setActiveLanguage(newLanguage);
   };
 
   const toggleCategory = (categoryId: number) => {
@@ -255,8 +380,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     <button
                       key={lang.key}
                       type="button"
-                      onClick={() => setActiveLanguage(lang.key as any)}
-                      className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      onClick={() => handleLanguageChange(lang.key as any)}
+                      className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors relative ${
                         activeLanguage === lang.key
                           ? 'text-white'
                           : 'text-gray-600 hover:text-gray-800'
@@ -268,6 +393,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     >
                       <span className="mr-2">{lang.flag}</span>
                       {lang.label}
+                      {savedLanguages.has(lang.key as any) && (
+                        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-green-500"></span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -438,7 +566,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           style={{ backgroundColor: category.color }}
                         />
                         <span className="text-sm font-medium" style={{ color: theme.colors.foreground }}>
-                          {category.name}
+                          {category.name || category.name_translations?.en || category.name_translations?.ru || category.name_translations?.uk || 'Unnamed Category'}
                         </span>
                       </div>
                     </button>
@@ -491,19 +619,44 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         )}
                       </div>
 
+                      {/* Language tabs for description blocks */}
+                      <div className="mb-4">
+                        <div className="flex space-x-1 p-1 rounded-lg" style={{ background: theme.colors.muted }}>
+                          {(['en', 'ru', 'uk'] as const).map((lang) => (
+                            <button
+                              key={lang}
+                              type="button"
+                              onClick={() => handleLanguageChange(lang)}
+                              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors relative ${
+                                activeLanguage === lang ? 'text-white' : ''
+                              }`}
+                              style={{
+                                background: activeLanguage === lang ? theme.colors.accent : 'transparent',
+                                color: activeLanguage === lang ? 'white' : theme.colors.mutedForeground
+                              }}
+                            >
+                              {lang.toUpperCase()}
+                              {savedLanguages.has(lang) && (
+                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-500"></span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       <div className="space-y-3">
                         <div>
                           <input
                             type="text"
-                            value={block.title}
-                            onChange={(e) => updateDescriptionBlock(index, 'title', e.target.value)}
+                            value={formData.description_blocks_translations[activeLanguage][index]?.title || ''}
+                            onChange={(e) => updateDescriptionBlockTranslation(index, 'title', e.target.value, activeLanguage)}
                             className="w-full px-3 py-2 rounded-lg border text-sm"
                             style={{ 
                               background: theme.colors.background,
                               borderColor: errors[`block_title_${index}`] ? '#ef4444' : theme.colors.border,
                               color: theme.colors.foreground
                             }}
-                            placeholder="Block title"
+                            placeholder={`Block title (${activeLanguage.toUpperCase()})`}
                           />
                           {errors[`block_title_${index}`] && (
                             <p className="text-xs mt-1" style={{ color: '#ef4444' }}>
@@ -514,8 +667,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
                         <div>
                           <textarea
-                            value={block.content}
-                            onChange={(e) => updateDescriptionBlock(index, 'content', e.target.value)}
+                            value={formData.description_blocks_translations[activeLanguage][index]?.content || ''}
+                            onChange={(e) => updateDescriptionBlockTranslation(index, 'content', e.target.value, activeLanguage)}
                             rows={3}
                             className="w-full px-3 py-2 rounded-lg border text-sm resize-none"
                             style={{ 
@@ -523,7 +676,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                               borderColor: errors[`block_content_${index}`] ? '#ef4444' : theme.colors.border,
                               color: theme.colors.foreground
                             }}
-                            placeholder="Block content"
+                            placeholder={`Block content (${activeLanguage.toUpperCase()})`}
                           />
                           {errors[`block_content_${index}`] && (
                             <p className="text-xs mt-1" style={{ color: '#ef4444' }}>

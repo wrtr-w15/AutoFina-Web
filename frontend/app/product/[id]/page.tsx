@@ -35,6 +35,20 @@ interface Product {
     title: string;
     content: string;
   }>;
+  description_blocks_translations?: {
+    en: Array<{
+      title: string;
+      content: string;
+    }>;
+    ru: Array<{
+      title: string;
+      content: string;
+    }>;
+    uk: Array<{
+      title: string;
+      content: string;
+    }>;
+  };
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -56,6 +70,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       name: product.name_translations?.[currentLocale] || product.name,
       short_description: product.short_description_translations?.[currentLocale] || product.short_description,
       full_description: product.full_description_translations?.[currentLocale] || product.full_description,
+      description_blocks: product.description_blocks_translations?.[currentLocale] || product.description_blocks || [],
     };
   };
 
@@ -236,35 +251,43 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               {/* Description Blocks */}
-              {product.description_blocks && product.description_blocks.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-semibold mb-6" style={{ color: theme.colors.foreground }}>
-                    Features
-                  </h2>
-                  <div className="space-y-4">
-                    {product.description_blocks.map((block, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 * index }}
-                        className="p-6 rounded-2xl border"
-                        style={{ 
-                          background: theme.colors.card,
-                          borderColor: theme.colors.border 
-                        }}
-                      >
-                        <h3 className="text-xl font-semibold mb-3" style={{ color: theme.colors.foreground }}>
-                          {block.title}
-                        </h3>
-                        <p className="leading-relaxed" style={{ color: theme.colors.mutedForeground }}>
-                          {block.content}
-                        </p>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {(() => {
+                const localizedContent = getLocalizedContent(product);
+                const descriptionBlocks = localizedContent.description_blocks;
+                
+                if (descriptionBlocks && descriptionBlocks.length > 0) {
+                  return (
+                    <div>
+                      <h2 className="text-2xl font-semibold mb-6" style={{ color: theme.colors.foreground }}>
+                        Features
+                      </h2>
+                      <div className="space-y-4">
+                        {descriptionBlocks.map((block, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 * index }}
+                            className="p-6 rounded-2xl border"
+                            style={{ 
+                              background: theme.colors.card,
+                              borderColor: theme.colors.border 
+                            }}
+                          >
+                            <h3 className="text-xl font-semibold mb-3" style={{ color: theme.colors.foreground }}>
+                              {block.title}
+                            </h3>
+                            <p className="leading-relaxed" style={{ color: theme.colors.mutedForeground }}>
+                              {block.content}
+                            </p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {/* Add to Cart Button */}
               <motion.div

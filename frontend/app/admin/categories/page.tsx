@@ -237,12 +237,13 @@ export default function AdminCategories() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
-                className="p-6 rounded-2xl border"
+                className="p-6 rounded-2xl border h-64 flex flex-col"
                 style={{
                   background: theme.colors.card,
                   borderColor: theme.colors.border
                 }}
               >
+                {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     {category.color && (
@@ -252,7 +253,7 @@ export default function AdminCategories() {
                       />
                     )}
                     <h3 className="text-xl font-semibold" style={{ color: theme.colors.foreground }}>
-                      {category.name}
+                      {category.name || category.name_translations?.en || category.name_translations?.ru || category.name_translations?.uk || 'Unnamed Category'}
                     </h3>
                   </div>
                   <span
@@ -264,38 +265,42 @@ export default function AdminCategories() {
                   </span>
                 </div>
 
-                {category.description && category.description.trim() && (
-                  <p className="text-sm mb-4" style={{ color: theme.colors.mutedForeground }}>
-                    {category.description}
-                  </p>
-                )}
+                {/* Content - flexible */}
+                <div className="flex-grow">
+                  {(category.description || category.description_translations?.en || category.description_translations?.ru || category.description_translations?.uk) && (
+                    <p className="text-sm mb-4" style={{ color: theme.colors.mutedForeground }}>
+                      {category.description || category.description_translations?.en || category.description_translations?.ru || category.description_translations?.uk}
+                    </p>
+                  )}
 
-                <div className="text-xs mb-4" style={{ color: theme.colors.mutedForeground }}>
-                  Created: {formatDate(category.created_at)}
+                  <div className="text-xs mb-4" style={{ color: theme.colors.mutedForeground }}>
+                    Created: {formatDate(category.created_at)}
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Buttons - at bottom */}
+                <div className="flex gap-2 mt-auto">
                   <button
                     onClick={() => handleEditClick(category)}
-                    className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="p-2 rounded-lg transition-colors hover:bg-opacity-80"
                     style={{
                       background: theme.colors.accent,
                       color: 'white'
                     }}
+                    title="Edit category"
                   >
-                    <EditIcon size={16} className="inline mr-2" />
-                    Edit
+                    <EditIcon size={16} />
                   </button>
                   <button
                     onClick={() => deleteCategory(category.id)}
-                    className="px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="p-2 rounded-lg transition-colors hover:bg-opacity-80"
                     style={{
                       background: '#ef4444',
                       color: 'white'
                     }}
+                    title="Delete category"
                   >
-                    <DeleteIcon size={16} className="inline mr-2" />
-                    Delete
+                    <DeleteIcon size={16} />
                   </button>
                 </div>
               </motion.div>

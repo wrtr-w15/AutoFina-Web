@@ -27,8 +27,8 @@ export class DescriptionBlockDto {
 
 export class CreateProductDto {
   @IsString()
-  @IsNotEmpty()
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @IsObject()
   @ValidateNested()
@@ -37,8 +37,8 @@ export class CreateProductDto {
   name_translations?: TranslationDto;
 
   @IsString()
-  @IsNotEmpty()
-  short_description: string;
+  @IsOptional()
+  short_description?: string;
 
   @IsObject()
   @ValidateNested()
@@ -47,8 +47,8 @@ export class CreateProductDto {
   short_description_translations?: TranslationDto;
 
   @IsString()
-  @IsNotEmpty()
-  full_description: string;
+  @IsOptional()
+  full_description?: string;
 
   @IsObject()
   @ValidateNested()
@@ -67,9 +67,25 @@ export class CreateProductDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => DescriptionBlockDto)
-  description_blocks: DescriptionBlockDto[];
+  @IsOptional()
+  description_blocks?: DescriptionBlockDto[];
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Object)
+  @IsOptional()
+  description_blocks_translations?: {
+    en: DescriptionBlockDto[];
+    ru: DescriptionBlockDto[];
+    uk: DescriptionBlockDto[];
+  };
 
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  category_ids?: number[];
 }

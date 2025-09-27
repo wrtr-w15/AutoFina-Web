@@ -21,18 +21,20 @@ interface Order {
 export default function AdminDashboard() {
   const { token } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
-      fetchOrders();
+      fetchAllData();
     }
     // Scroll to top when page loads
     window.scrollTo(0, 0);
   }, [token]);
 
-  const fetchOrders = async () => {
+  const fetchAllData = async () => {
     if (!token) {
       setError('No authentication token available');
       setLoading(false);
@@ -41,18 +43,45 @@ export default function AdminDashboard() {
     
     try {
       setLoading(true);
-      const response = await fetch('/api/orders', {
+      
+      // Fetch orders
+      const ordersResponse = await fetch('/api/orders', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      const data = await response.json();
-      setOrders(Array.isArray(data.data) ? data.data : []);
+      if (ordersResponse.ok) {
+        const ordersData = await ordersResponse.json();
+        setOrders(Array.isArray(ordersData.data) ? ordersData.data : []);
+      }
+      
+      // Fetch products
+      const productsResponse = await fetch('/api/products', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        setProducts(Array.isArray(productsData.data) ? productsData.data : []);
+      }
+      
+      // Fetch categories
+      const categoriesResponse = await fetch('/api/categories', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (categoriesResponse.ok) {
+        const categoriesData = await categoriesResponse.json();
+        setCategories(Array.isArray(categoriesData.data) ? categoriesData.data : []);
+      }
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      setOrders([]);
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
     }
@@ -164,81 +193,85 @@ export default function AdminDashboard() {
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Navigation Cards */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-1"
-          >
-            <div className="space-y-12">
-              <Link href="/admin/orders">
-                <div 
-                  className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
-                  style={{ 
-                    background: theme.colors.card,
-                    borderColor: theme.colors.border 
-                  }}
-                >
-                  <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
-                    <OrdersIcon className="mr-2" size={20} />
-                    Orders
-                  </h3>
-                  <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
-                    View and manage all orders
-                  </p>
-                  <div className="mt-2 text-2xl font-bold" style={{ color: theme.colors.accent }}>
-                    {Array.isArray(orders) ? orders.length : 0}
-                  </div>
+        {/* Navigation Cards - Top Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link href="/admin/orders">
+              <div 
+                className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
+                style={{ 
+                  background: theme.colors.card,
+                  borderColor: theme.colors.border 
+                }}
+              >
+                <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
+                  <OrdersIcon className="mr-2" size={20} />
+                  Orders
+                </h3>
+                <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                  View and manage all orders
+                </p>
+                <div className="mt-2 text-2xl font-bold" style={{ color: theme.colors.accent }}>
+                  {Array.isArray(orders) ? orders.length : 0}
                 </div>
-              </Link>
+              </div>
+            </Link>
 
-              <Link href="/admin/products">
-                <div 
-                  className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
-                  style={{ 
-                    background: theme.colors.card,
-                    borderColor: theme.colors.border 
-                  }}
-                >
-                  <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
-                    <ProductsIcon className="mr-2" size={20} />
-                    Products
-                  </h3>
-                  <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
-                    Manage product catalog
-                  </p>
+            <Link href="/admin/products">
+              <div 
+                className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
+                style={{ 
+                  background: theme.colors.card,
+                  borderColor: theme.colors.border 
+                }}
+              >
+                <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
+                  <ProductsIcon className="mr-2" size={20} />
+                  Products
+                </h3>
+                <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                  Manage product catalog
+                </p>
+                <div className="mt-2 text-2xl font-bold" style={{ color: theme.colors.accent }}>
+                  {Array.isArray(products) ? products.length : 0}
                 </div>
-              </Link>
+              </div>
+            </Link>
 
-              <Link href="/admin/categories">
-                <div 
-                  className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
-                  style={{ 
-                    background: theme.colors.card,
-                    borderColor: theme.colors.border 
-                  }}
-                >
-                  <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
-                    <TagIcon className="mr-2" size={20} />
-                    Categories
-                  </h3>
-                  <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
-                    Manage product categories
-                  </p>
+            <Link href="/admin/categories">
+              <div 
+                className="p-6 rounded-2xl border cursor-pointer hover:scale-105 transition-transform"
+                style={{ 
+                  background: theme.colors.card,
+                  borderColor: theme.colors.border 
+                }}
+              >
+                <h3 className="text-xl font-semibold mb-2" style={{ color: theme.colors.foreground }}>
+                  <TagIcon className="mr-2" size={20} />
+                  Categories
+                </h3>
+                <p className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                  Manage product categories
+                </p>
+                <div className="mt-2 text-2xl font-bold" style={{ color: theme.colors.accent }}>
+                  {Array.isArray(categories) ? categories.length : 0}
                 </div>
-              </Link>
-            </div>
-          </motion.div>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
 
-          {/* Recent Orders */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="lg:col-span-2"
-          >
+        {/* Recent Orders - Bottom Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
             <div 
               className="p-6 rounded-2xl border"
               style={{ 
@@ -308,7 +341,6 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
         </div>
-        </div>
       </div>
     );
-}
+  }

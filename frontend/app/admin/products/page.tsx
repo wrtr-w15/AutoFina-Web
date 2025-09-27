@@ -34,7 +34,31 @@ interface Product {
     title: string;
     content: string;
   }>;
-  category_ids: number[];
+  description_blocks_translations?: {
+    en: Array<{
+      title: string;
+      content: string;
+    }>;
+    ru: Array<{
+      title: string;
+      content: string;
+    }>;
+    uk: Array<{
+      title: string;
+      content: string;
+    }>;
+  };
+  categories?: Array<{
+    id: number;
+    name: string;
+    name_translations: {
+      en: string;
+      ru: string;
+      uk: string;
+    };
+    color: string;
+  }>;
+  category_ids?: number[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -66,6 +90,7 @@ export default function AdminProducts() {
       
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
+      console.log('AdminProducts: fetched products data:', data);
       setProducts(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
@@ -148,6 +173,7 @@ export default function AdminProducts() {
   };
 
   const editProduct = (product: Product) => {
+    console.log('AdminProducts: editProduct called with product:', product);
     setEditingProduct(product);
   };
 
@@ -239,7 +265,7 @@ export default function AdminProducts() {
           transition={{ delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {products.map((product, index) => (
+          {products.filter(product => product).map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
@@ -251,11 +277,11 @@ export default function AdminProducts() {
                 borderColor: theme.colors.border 
               }}
             >
-              {product.image_url && (
+              {product?.image_url && (
                 <div className="mb-4">
                   <img
                     src={product.image_url}
-                    alt={product.name}
+                    alt={product.name || 'Product'}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 </div>
@@ -264,25 +290,25 @@ export default function AdminProducts() {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xl font-semibold" style={{ color: theme.colors.foreground }}>
-                    {product.name}
+                    {product?.name || 'Unnamed Product'}
                   </h3>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      product.is_active ? 'text-green-600 bg-green-100' : 'text-gray-600 bg-gray-100'
+                      product?.is_active ? 'text-green-600 bg-green-100' : 'text-gray-600 bg-gray-100'
                     }`}
                   >
-                    {product.is_active ? 'Active' : 'Inactive'}
+                    {product?.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
                 <p className="text-sm mb-3" style={{ color: theme.colors.mutedForeground }}>
-                  {product.short_description}
+                  {product?.short_description || 'No description'}
                 </p>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>
-                    ${product.price}
+                    ${product?.price || 0}
                   </span>
                   <span className="text-xs" style={{ color: theme.colors.mutedForeground }}>
-                    {formatDate(product.created_at)}
+                    {formatDate(product?.created_at || new Date().toISOString())}
                   </span>
                 </div>
               </div>
@@ -334,19 +360,24 @@ export default function AdminProducts() {
             setEditingProduct(null);
           }}
           onSubmit={editingProduct ? updateProduct : createProduct}
-          initialData={editingProduct ? {
-            name: editingProduct.name,
-            name_translations: editingProduct.name_translations,
-            short_description: editingProduct.short_description,
-            short_description_translations: editingProduct.short_description_translations,
-            full_description: editingProduct.full_description,
-            full_description_translations: editingProduct.full_description_translations,
-            price: editingProduct.price,
-            image_url: editingProduct.image_url || '',
-            description_blocks: editingProduct.description_blocks,
-            category_ids: editingProduct.category_ids,
-            is_active: editingProduct.is_active
-          } : undefined}
+          initialData={editingProduct ? (() => {
+            const data = {
+              name: editingProduct.name,
+              name_translations: editingProduct.name_translations,
+              short_description: editingProduct.short_description,
+              short_description_translations: editingProduct.short_description_translations,
+              full_description: editingProduct.full_description,
+              full_description_translations: editingProduct.full_description_translations,
+              price: editingProduct.price,
+              image_url: editingProduct.image_url || '',
+              description_blocks: editingProduct.description_blocks,
+              description_blocks_translations: editingProduct.description_blocks_translations,
+              category_ids: editingProduct.categories?.map((cat: any) => cat.id) || [],
+              is_active: editingProduct.is_active
+            };
+            console.log('AdminProducts: passing initialData to ProductForm:', data);
+            return data;
+          })() : undefined}
         />
       </div>
     </div>

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCartIcon, CheckIcon } from "@/components/Icons";
 import Notification from "@/components/Notification";
-import Checkbox from "@/components/Checkbox";
+import FilterPopover from "@/components/FilterPopover";
 
 interface Product {
   id: number;
@@ -21,7 +21,18 @@ interface Product {
   price: number;
   image_url?: string;
   description_blocks: Array<{ title: string; content: string }>;
-  category_ids: number[];
+  description_blocks_translations?: {
+    en: Array<{ title: string; content: string }>;
+    ru: Array<{ title: string; content: string }>;
+    uk: Array<{ title: string; content: string }>;
+  };
+  categories?: Array<{
+    id: number;
+    name: string;
+    name_translations: { en: string; ru: string; uk: string };
+    color: string;
+  }>;
+  category_ids?: number[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -54,6 +65,8 @@ export default function ShopPage() {
   const [showNotification, setShowNotification] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSortPopover, setShowSortPopover] = useState(false);
+  const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
+  const filterButtonRef = React.useRef<HTMLButtonElement>(null);
   const [filters, setFilters] = useState<Filters>({
     search: '',
     categories: [],
@@ -120,7 +133,10 @@ export default function ShopPage() {
       });
     }
     if (filters.categories.length > 0) {
-      filtered = filtered.filter(p => p.category_ids?.some(id => filters.categories.includes(id)));
+      filtered = filtered.filter(p => {
+        const productCategoryIds = p.categories?.map(cat => cat.id) || [];
+        return productCategoryIds.some(id => filters.categories.includes(id));
+      });
     }
     if (filters.minPrice !== null) filtered = filtered.filter(p => p.price >= filters.minPrice!);
     if (filters.maxPrice !== null) filtered = filtered.filter(p => p.price <= filters.maxPrice!);
@@ -192,19 +208,22 @@ export default function ShopPage() {
               <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                 <div className="relative flex-1">
                   <input type="text" placeholder="Search products..." value={filters.search} onChange={e => updateFilters({ search: e.target.value })}
-                    className="w-full px-4 py-3 pl-10 rounded-lg border transition-colors"
+                    className="w-full px-3 py-2 pl-8 rounded-md border transition-colors text-sm"
                     style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }} />
-                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: theme.colors.mutedForeground }}
+                  <svg className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: theme.colors.mutedForeground }}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
 
                 <div className="flex gap-2">
-                  <button onClick={() => setShowFilters(!showFilters)}
-                    className="px-4 py-3 rounded-lg border transition-colors flex items-center gap-2 relative hover:bg-opacity-10"
-                    style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="relative">
+                    <button 
+                      ref={filterButtonRef}
+                      onClick={() => setShowFilters(!showFilters)}
+                      className="px-3 py-2 rounded-md border transition-colors flex items-center gap-1.5 relative hover:bg-opacity-10 text-sm"
+                      style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }}>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
                     </svg>
@@ -215,13 +234,26 @@ export default function ShopPage() {
                         <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold"
                           style={{ background: theme.colors.mutedForeground, color: theme.colors.background }}>{count}</span>);
                     })()}
-                  </button>
+                    </button>
+                    
+                    {/* Filter Popover */}
+                    <FilterPopover
+                      isOpen={showFilters}
+                      onClose={() => setShowFilters(false)}
+                      filters={filters}
+                      updateFilters={updateFilters}
+                      clearFilters={clearFilters}
+                      categories={categories}
+                      locale={locale}
+                      triggerRef={filterButtonRef}
+                    />
+                  </div>
 
                   <div className="relative" data-sort-popover>
                     <button onClick={() => setShowSortPopover(!showSortPopover)}
-                      className="px-4 py-3 rounded-lg border transition-colors flex items-center gap-2 relative hover:bg-opacity-10"
+                      className="px-3 py-2 rounded-md border transition-colors flex items-center gap-1.5 relative hover:bg-opacity-10 text-sm"
                       style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                           d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                       </svg>
@@ -235,7 +267,7 @@ export default function ShopPage() {
                       {showSortPopover && (
                         <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          className="absolute top-full right-0 mt-2 p-2 rounded-lg border shadow-lg z-10 min-w-48"
+                          className="absolute top-full right-0 mt-2 p-2 rounded-lg border shadow-lg z-30 min-w-48"
                           style={{ background: theme.colors.card, borderColor: theme.colors.border }}>
                           {[
                             { value: 'newest', label: 'Newest First' },
@@ -259,163 +291,6 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Advanced Filters */}
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0, y: -20 }} 
-                  animate={{ opacity: 1, height: 'auto', y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -20 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                    height: { 
-                      duration: 0.6, 
-                      ease: [0.25, 0.46, 0.45, 0.94] 
-                    }
-                  }}
-                  className="mt-6 p-6 rounded-lg border overflow-hidden"
-                  style={{ background: theme.colors.card, borderColor: theme.colors.border }}>
-                  <motion.div 
-                    initial={{ opacity: 0, y: 30 }} 
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ 
-                      duration: 0.8, 
-                      delay: 0.2,
-                      ease: [0.25, 0.46, 0.45, 0.94]
-                    }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                    {/* Categories */}
-                    <motion.div
-                      initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      transition={{ 
-                        duration: 0.6, 
-                        delay: 0.4,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                        type: "spring",
-                        stiffness: 60,
-                        damping: 20,
-                        mass: 0.8
-                      }}
-                    >
-                      <label className="block text-sm font-medium mb-3" style={{ color: theme.colors.foreground }}>Categories</label>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {categories.map((c, index) => (
-                          <Checkbox
-                            key={c.id}
-                            id={`category-${c.id}`}
-                            checked={filters.categories.includes(c.id)}
-                            onChange={(checked) => updateFilters({
-                              categories: checked
-                                ? [...filters.categories, c.id]
-                                : filters.categories.filter(id => id !== c.id)
-                            })}
-                            label={c.name_translations?.[locale as keyof typeof c.name_translations] || c.name}
-                            color={c.color}
-                            index={index}
-                            delay={0.6}
-                          />
-                        ))}
-                      </div>
-                    </motion.div>
-
-                    {/* Price */}
-                    <motion.div
-                      initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      transition={{ 
-                        duration: 0.6, 
-                        delay: 0.5,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                        type: "spring",
-                        stiffness: 60,
-                        damping: 20,
-                        mass: 0.8
-                      }}
-                    >
-                      <label className="block text-sm font-medium mb-3" style={{ color: theme.colors.foreground }}>Price Range</label>
-                      <div className="space-y-3">
-                        <motion.div
-                          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ 
-                            duration: 0.5, 
-                            delay: 0.7,
-                            ease: [0.25, 0.46, 0.45, 0.94],
-                            type: "spring",
-                            stiffness: 80,
-                            damping: 15
-                          }}
-                        >
-                          <label className="block text-xs mb-1" style={{ color: theme.colors.mutedForeground }}>Min Price ($)</label>
-                          <input type="number" placeholder="0" value={filters.minPrice || ''}
-                            onChange={e => updateFilters({ minPrice: e.target.value ? Number(e.target.value) : null })}
-                            className="w-full px-3 py-2 rounded-lg border text-sm transition-all duration-200 focus:ring-2 focus:ring-opacity-50"
-                            style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }} />
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ 
-                            duration: 0.5, 
-                            delay: 0.8,
-                            ease: [0.25, 0.46, 0.45, 0.94],
-                            type: "spring",
-                            stiffness: 80,
-                            damping: 15
-                          }}
-                        >
-                          <label className="block text-xs mb-1" style={{ color: theme.colors.mutedForeground }}>Max Price ($)</label>
-                          <input type="number" placeholder="No limit" value={filters.maxPrice || ''}
-                            onChange={e => updateFilters({ maxPrice: e.target.value ? Number(e.target.value) : null })}
-                            className="w-full px-3 py-2 rounded-lg border text-sm transition-all duration-200 focus:ring-2 focus:ring-opacity-50"
-                            style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }} />
-                        </motion.div>
-                      </div>
-                    </motion.div>
-
-                    {/* Clear */}
-                    <motion.div 
-                      className="flex items-end"
-                      initial={{ opacity: 0, x: -30, scale: 0.9 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      transition={{ 
-                        duration: 0.6, 
-                        delay: 0.6,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                        type: "spring",
-                        stiffness: 60,
-                        damping: 20,
-                        mass: 0.8
-                      }}
-                    >
-                      <motion.button 
-                        onClick={clearFilters} 
-                        whileHover={{ 
-                          scale: 1.02,
-                          transition: { 
-                            duration: 0.3,
-                            ease: [0.25, 0.46, 0.45, 0.94]
-                          }
-                        }}
-                        whileTap={{ 
-                          scale: 0.98,
-                          transition: { 
-                            duration: 0.2,
-                            ease: [0.25, 0.46, 0.45, 0.94]
-                          }
-                        }}
-                        className="w-full px-4 py-2 rounded-lg border transition-all duration-300 hover:shadow-md"
-                        style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }}>
-                        Clear All Filters
-                      </motion.button>
-                    </motion.div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
 
           {filteredProducts.length === 0 ? (
@@ -430,50 +305,162 @@ export default function ShopPage() {
                 const c = getLocalizedContent(product);
                 return (
                   <motion.div key={product.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
-                    className="relative overflow-hidden rounded-2xl p-6 transition-transform hover:-translate-y-1 cursor-pointer"
+                    className="relative overflow-hidden rounded-2xl p-4 transition-transform hover:-translate-y-1 cursor-pointer flex flex-col h-80"
                     style={{ background: `linear-gradient(180deg, ${theme.colors.card} 0%, ${theme.colors.muted} 100%)`,
                       boxShadow: theme.shadow.soft, border: `1px solid ${theme.colors.border}` }}
                     onClick={() => window.location.href = `/product/${product.id}`}>
-                    {product.image_url && (
-                      <div className="mb-4">
-                        <img src={product.image_url} alt={c.name} className="w-full h-48 object-cover rounded-lg" />
-                      </div>
-                    )}
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-xl font-semibold" style={{ color: theme.colors.foreground }}>{c.name}</h3>
-                      <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>{formatPrice(product.price)}</span>
+                    {/* Product image in top left corner */}
+                    <div className="absolute top-3 left-3 w-24 h-24 rounded-lg overflow-hidden z-10 flex items-center justify-center"
+                      style={{ 
+                        background: theme.colors.muted,
+                        border: `1px solid ${theme.colors.border}`
+                      }}>
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={c.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <svg 
+                          className="w-12 h-12" 
+                          style={{ color: theme.colors.mutedForeground }}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      )}
                     </div>
-                    <p className="mb-4 leading-relaxed" style={{ color: theme.colors.mutedForeground }}>{c.short_description}</p>
 
-                    {product.description_blocks?.length > 0 && (
-                      <div className="space-y-2 mb-4">
-                        {product.description_blocks.slice(0, 3).map((b, j) => (
-                          <div key={j} className="flex items-center gap-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                              style={{ color: theme.colors.accent }}>
-                              <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-sm" style={{ color: theme.colors.mutedForeground }}>{b.title}</span>
-                          </div>
-                        ))}
-                        {product.description_blocks.length > 3 && (
-                          <div className="text-xs" style={{ color: theme.colors.mutedForeground }}>
-                            +{product.description_blocks.length - 3} more features
+                    {/* Tags in top right corner */}
+                    {product.categories && product.categories.length > 0 && (
+                      <div className="absolute top-3 right-3 flex flex-wrap gap-1 z-10">
+                        {/* Show only first category */}
+                        <span
+                          className="px-2 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            background: product.categories[0].color + '20',
+                            color: product.categories[0].color,
+                            border: `1px solid ${product.categories[0].color}40`
+                          }}
+                        >
+                          {product.categories[0].name_translations?.[locale as 'en' | 'ru' | 'uk'] || product.categories[0].name}
+                        </span>
+                        {/* Show +count if more than 1 category */}
+                        {product.categories.length > 1 && (
+                          <div className="relative">
+                            <span
+                              className="px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-all duration-200 hover:scale-105"
+                              style={{
+                                background: theme.colors.muted,
+                                color: theme.colors.mutedForeground
+                              }}
+                              onMouseEnter={() => setHoveredProductId(product.id)}
+                              onMouseLeave={() => setHoveredProductId(null)}
+                            >
+                              +{product.categories.length - 1}
+                            </span>
+                            
+                            {/* Tooltip with all categories */}
+                            <AnimatePresence>
+                              {hoveredProductId === product.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="absolute top-full left-0 mt-2 p-2 rounded-lg border shadow-lg z-20 min-w-32"
+                                  style={{
+                                    background: theme.colors.card,
+                                    borderColor: theme.colors.border
+                                  }}
+                                >
+                                  <div className="space-y-1">
+                                    {product.categories.slice(1).map((category, index) => (
+                                      <div
+                                        key={index}
+                                        className="px-2 py-1 rounded-full text-xs font-medium"
+                                        style={{
+                                          background: category.color + '20',
+                                          color: category.color,
+                                          border: `1px solid ${category.color}40`
+                                        }}
+                                      >
+                                        {category.name_translations?.[locale as 'en' | 'ru' | 'uk'] || category.name}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                         )}
                       </div>
                     )}
 
-                    <button onClick={e => { e.stopPropagation(); handleAddToCart(product); }}
-                      disabled={isInCart(product.id)}
-                      className="w-full mt-6 px-4 py-2 rounded-xl font-semibold transition flex items-center justify-center gap-2"
-                      style={{
-                        border: `1px solid ${isInCart(product.id) ? theme.colors.accent : theme.colors.mutedForeground}`,
-                        color: isInCart(product.id) ? theme.colors.background : theme.colors.mutedForeground,
-                        background: isInCart(product.id) ? theme.colors.accent : "transparent"
-                      }}>
-                      {isInCart(product.id) ? (<><CheckIcon size={16} />In Cart</>) : (<><ShoppingCartIcon size={16} />Add to Cart</>)}
-                    </button>
+                    {/* Title and description to the right of image */}
+                    <div className="flex-shrink-0 pl-28 pt-2">
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: theme.colors.foreground }}>{c.name}</h3>
+                      <p className="mb-4 leading-relaxed text-sm" style={{ color: theme.colors.mutedForeground }}>{c.short_description}</p>
+                    </div>
+
+                    {/* Features section - fixed position */}
+                    <div className="flex-grow flex flex-col justify-between">
+                      <div className="mt-6 space-y-2 min-h-[120px]">
+                        {(() => {
+                          // Get localized description blocks
+                          const localizedBlocks = product.description_blocks_translations?.[locale as 'en' | 'ru' | 'uk'] || product.description_blocks || [];
+                          
+                          if (localizedBlocks.length > 0) {
+                            return (
+                              <>
+                                {localizedBlocks.slice(0, 3).map((b, j) => (
+                                  <div key={j} className="flex items-center gap-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                      style={{ color: theme.colors.accent }}>
+                                      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span className="text-sm font-normal" style={{ color: theme.colors.foreground }}>{b.title}</span>
+                                  </div>
+                                ))}
+                                {localizedBlocks.length > 3 && (
+                                  <div className="text-sm px-3 py-1 rounded-full inline-block w-fit font-normal" 
+                                    style={{ 
+                                      background: theme.colors.muted, 
+                                      color: theme.colors.mutedForeground 
+                                    }}>
+                                    +{localizedBlocks.length - 3} more
+                                  </div>
+                                )}
+                              </>
+                            );
+                          } else {
+                            return (
+                              <div className="text-sm" style={{ color: theme.colors.mutedForeground }}>
+                                No features specified
+                              </div>
+                            );
+                          }
+                        })()}
+                      </div>
+
+                      {/* Fixed bottom section - Add to Cart button and price */}
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
+                        <button onClick={e => { e.stopPropagation(); handleAddToCart(product); }}
+                          disabled={isInCart(product.id)}
+                          className="px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 text-sm"
+                          style={{
+                            border: `1px solid ${isInCart(product.id) ? theme.colors.accent : theme.colors.mutedForeground}`,
+                            color: isInCart(product.id) ? theme.colors.background : theme.colors.mutedForeground,
+                            background: isInCart(product.id) ? theme.colors.accent : "transparent"
+                          }}>
+                          {isInCart(product.id) ? (<><CheckIcon size={16} />In Cart</>) : (<><ShoppingCartIcon size={16} />Add to Cart</>)}
+                        </button>
+                        <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>{formatPrice(product.price)}</span>
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}
