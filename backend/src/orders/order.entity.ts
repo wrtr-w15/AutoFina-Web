@@ -31,7 +31,7 @@ export class Order {
 
   @Column({ 
     type: 'enum', 
-    enum: ['personal', 'cart'],
+    enum: ['personal', 'available'],
     default: 'personal'
   })
   order_type: string;
@@ -42,6 +42,21 @@ export class Order {
     default: 'pending'
   })
   status: string;
+
+      // Поля для checkout заказов
+      @Column({ type: 'varchar', length: 255, nullable: true })
+      name: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  total_price: number;
+
+  @Column({ type: 'json', nullable: true })
+  products: Array<{
+    id: number;
+    name: string;
+    quantity: number;
+    price: string;
+  }>;
 
   @CreateDateColumn()
   created_at: Date;

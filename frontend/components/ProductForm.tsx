@@ -53,7 +53,7 @@ interface ProductFormProps {
     price: number;
     image_url: string;
     description_blocks: DescriptionBlock[];
-    description_blocks_translations: DescriptionBlocksTranslations;
+    description_blocks_translations?: DescriptionBlocksTranslations;
     category_ids: number[];
     is_active: boolean;
   }) => void;
@@ -79,7 +79,7 @@ interface ProductFormProps {
     price: number;
     image_url: string;
     description_blocks: DescriptionBlock[];
-    description_blocks_translations: DescriptionBlocksTranslations;
+    description_blocks_translations?: DescriptionBlocksTranslations;
     category_ids: number[];
     is_active: boolean;
   };
@@ -127,7 +127,46 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [savedLanguages, setSavedLanguages] = useState<Set<'en' | 'ru' | 'uk'>>(new Set());
 
-  // Update form data when initialData changes
+  // Reset form when modal opens for new product (no initialData)
+  React.useEffect(() => {
+    if (isOpen && !initialData) {
+      console.log('ProductForm: Resetting form for new product');
+      setFormData({
+        name: '',
+        name_translations: {
+          en: '',
+          ru: '',
+          uk: ''
+        },
+        short_description: '',
+        short_description_translations: {
+          en: '',
+          ru: '',
+          uk: ''
+        },
+        full_description: '',
+        full_description_translations: {
+          en: '',
+          ru: '',
+          uk: ''
+        },
+        price: 0,
+        image_url: '',
+        description_blocks: [{ title: '', content: '' }],
+        description_blocks_translations: {
+          en: [{ title: '', content: '' }],
+          ru: [{ title: '', content: '' }],
+          uk: [{ title: '', content: '' }]
+        },
+        category_ids: [],
+        is_active: true
+      });
+      setActiveLanguage('en');
+      setSavedLanguages(new Set());
+    }
+  }, [isOpen, initialData]);
+
+  // Update form data when initialData changes (for editing)
   React.useEffect(() => {
     if (initialData) {
       console.log('ProductForm: initialData received:', initialData);
@@ -274,7 +313,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const updateDescriptionBlock = (index: number, field: 'title' | 'content', value: string) => {
     setFormData(prev => {
-      const updatedBlocks = prev.description_blocks.map((block, i) => 
+      const updatedBlocks = prev.description_blocks_translations[activeLanguage].map((block, i) => 
         i === index ? { ...block, [field]: value } : block
       );
       
@@ -305,12 +344,29 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const handleLanguageChange = (newLanguage: 'en' | 'ru' | 'uk') => {
     if (activeLanguage !== newLanguage) {
       setFormData(prev => {
-        // Сохраняем текущие изменения в description_blocks перед переключением
+        // Сохраняем текущие изменения во всех полях перед переключением
         const currentBlocks = prev.description_blocks_translations[activeLanguage] || prev.description_blocks;
         
         return {
           ...prev,
+          // Сохраняем текущие значения в базовые поля
+          name: prev.name_translations[activeLanguage] || prev.name,
+          short_description: prev.short_description_translations[activeLanguage] || prev.short_description,
+          full_description: prev.full_description_translations[activeLanguage] || prev.full_description,
           description_blocks: currentBlocks,
+          // Обновляем translations для текущего языка
+          name_translations: {
+            ...prev.name_translations,
+            [activeLanguage]: prev.name_translations[activeLanguage] || prev.name
+          },
+          short_description_translations: {
+            ...prev.short_description_translations,
+            [activeLanguage]: prev.short_description_translations[activeLanguage] || prev.short_description
+          },
+          full_description_translations: {
+            ...prev.full_description_translations,
+            [activeLanguage]: prev.full_description_translations[activeLanguage] || prev.full_description
+          },
           description_blocks_translations: {
             ...prev.description_blocks_translations,
             [activeLanguage]: currentBlocks
@@ -583,7 +639,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <label className="block text-sm font-medium" style={{ color: theme.colors.foreground }}>
-                    Description Blocks
+                    Features ({activeLanguage.toUpperCase()})
                   </label>
                   <button
                     type="button"
@@ -619,37 +675,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         )}
                       </div>
 
-                      {/* Language tabs for description blocks */}
-                      <div className="mb-4">
-                        <div className="flex space-x-1 p-1 rounded-lg" style={{ background: theme.colors.muted }}>
-                          {(['en', 'ru', 'uk'] as const).map((lang) => (
-                            <button
-                              key={lang}
-                              type="button"
-                              onClick={() => handleLanguageChange(lang)}
-                              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors relative ${
-                                activeLanguage === lang ? 'text-white' : ''
-                              }`}
-                              style={{
-                                background: activeLanguage === lang ? theme.colors.accent : 'transparent',
-                                color: activeLanguage === lang ? 'white' : theme.colors.mutedForeground
-                              }}
-                            >
-                              {lang.toUpperCase()}
-                              {savedLanguages.has(lang) && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-500"></span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                      {/* Features use the main language selector */}
 
                       <div className="space-y-3">
                         <div>
                           <input
                             type="text"
                             value={formData.description_blocks_translations[activeLanguage][index]?.title || ''}
-                            onChange={(e) => updateDescriptionBlockTranslation(index, 'title', e.target.value, activeLanguage)}
+                            onChange={(e) => updateDescriptionBlock(index, 'title', e.target.value)}
                             className="w-full px-3 py-2 rounded-lg border text-sm"
                             style={{ 
                               background: theme.colors.background,
@@ -668,7 +701,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         <div>
                           <textarea
                             value={formData.description_blocks_translations[activeLanguage][index]?.content || ''}
-                            onChange={(e) => updateDescriptionBlockTranslation(index, 'content', e.target.value, activeLanguage)}
+                            onChange={(e) => updateDescriptionBlock(index, 'content', e.target.value)}
                             rows={3}
                             className="w-full px-3 py-2 rounded-lg border text-sm resize-none"
                             style={{ 

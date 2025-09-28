@@ -13,8 +13,12 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
+    console.log('OrdersService: Creating order with data:', JSON.stringify(createOrderDto, null, 2));
     const order = this.ordersRepository.create(createOrderDto);
-    return await this.ordersRepository.save(order);
+    console.log('OrdersService: Created order entity:', JSON.stringify(order, null, 2));
+    const savedOrder = await this.ordersRepository.save(order);
+    console.log('OrdersService: Saved order:', JSON.stringify(savedOrder, null, 2));
+    return savedOrder;
   }
 
   async findAll(): Promise<Order[]> {

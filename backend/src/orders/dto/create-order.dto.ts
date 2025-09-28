@@ -1,4 +1,19 @@
-import { IsString, IsOptional, IsNotEmpty, IsEmail, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsEmail, IsEnum, IsNumber, IsArray, ValidateNested, IsDecimal } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class ProductDto {
+  @IsNumber()
+  id: number;
+
+  @IsString()
+  name: string;
+
+  @IsNumber()
+  quantity: number;
+
+  @IsString()
+  price: string;
+}
 
 export class CreateOrderDto {
   @IsString()
@@ -34,7 +49,22 @@ export class CreateOrderDto {
   @IsOptional()
   message?: string;
 
-  @IsEnum(['personal', 'cart'])
+  @IsEnum(['personal', 'available'])
   @IsOptional()
   order_type?: string;
+
+      // Поля для checkout заказов
+      @IsString()
+      @IsOptional()
+      name?: string;
+
+  @IsNumber()
+  @IsOptional()
+  total_price?: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductDto)
+  @IsOptional()
+  products?: ProductDto[];
 }

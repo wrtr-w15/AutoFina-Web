@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from "react";
 import theme from "@/themes/theme";
 import { useTranslation } from "@/i18n";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { DeleteIcon, PlusIcon, MinusIcon } from "@/components/Icons";
+import Notification from "@/components/Notification";
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
@@ -17,14 +18,67 @@ export default function CheckoutPage() {
     email: '',
     telegram: '',
     phone: '',
+    promo_code: '',
     message: ''
   });
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [lastOrderTime, setLastOrderTime] = useState<number | null>(null);
+  const [showRateLimitError, setShowRateLimitError] = useState(false);
+
+  // Check for rate limiting on component mount
+  useEffect(() => {
+    const storedTime = localStorage.getItem('lastOrderTime');
+    if (storedTime) {
+      setLastOrderTime(parseInt(storedTime));
+    }
+  }, []);
+
+  // Update timer every minute
+  useEffect(() => {
+    if (!lastOrderTime) return;
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const timeDiff = now - lastOrderTime;
+      const thirtyMinutes = 30 * 60 * 1000;
+      
+      if (timeDiff >= thirtyMinutes) {
+        setLastOrderTime(null);
+        localStorage.removeItem('lastOrderTime');
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [lastOrderTime]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
     }).format(price);
+  };
+
+  const canPlaceOrder = () => {
+    if (!lastOrderTime) return true;
+    const now = Date.now();
+    const timeDiff = now - lastOrderTime;
+    const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+    return timeDiff >= thirtyMinutes;
+  };
+
+  const getTimeUntilNextOrder = () => {
+    if (!lastOrderTime) return 0;
+    const now = Date.now();
+    const timeDiff = now - lastOrderTime;
+    const thirtyMinutes = 30 * 60 * 1000;
+    const remaining = thirtyMinutes - timeDiff;
+    return Math.max(0, remaining);
+  };
+
+  const formatTimeRemaining = (milliseconds: number) => {
+    const minutes = Math.ceil(milliseconds / (60 * 1000));
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -37,22 +91,54 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!orderData.name.trim() || !orderData.telegram.trim()) {
+      alert('Name and Telegram are required fields');
+      return;
+    }
+
+    // Check rate limiting
+    if (!canPlaceOrder()) {
+      setShowRateLimitError(true);
+      setTimeout(() => setShowRateLimitError(false), 5000);
+      return;
+    }
+    
+    setShowConfirmation(true);
+  };
+
+  const confirmSubmit = async () => {
+    if (!agreed) {
+      alert('Please agree to the terms and conditions');
+      return;
+    }
+    
     setLoading(true);
 
     try {
+      console.log('Checkout: orderData:', orderData);
+      console.log('Checkout: cartItems:', cartItems);
+      console.log('Checkout: getTotalPrice():', getTotalPrice());
+      
       const orderPayload = {
-        ...orderData,
+        // Основные поля для checkout
+        name: orderData.name,
+        telegram: orderData.telegram,
+        email: orderData.email || '',
+        promo_code: orderData.promo_code || '',
+        message: orderData.message || '',
+        total_price: getTotalPrice(),
         products: cartItems.map(item => ({
           id: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price
-        })),
-        total_price: getTotalPrice(),
-        order_type: 'cart'
+        }))
       };
 
-      const response = await fetch('/api/order', {
+      console.log('Checkout: orderPayload:', orderPayload);
+
+      const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,8 +147,32 @@ export default function CheckoutPage() {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        
+        // Save order time for rate limiting
+        const currentTime = Date.now();
+        localStorage.setItem('lastOrderTime', currentTime.toString());
+        setLastOrderTime(currentTime);
+        
         clearCart();
-        window.location.href = '/order?success=true';
+        
+        // Redirect to success page with order details
+        const orderParams = new URLSearchParams({
+          orderId: responseData.data.id.toString(),
+          name: orderData.name,
+          telegram: orderData.telegram,
+          email: orderData.email || '',
+          promo: orderData.promo_code || '',
+          total: getTotalPrice().toString(),
+          products: JSON.stringify(cartItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price.toString()
+          })))
+        });
+        
+        window.location.href = `/order-success?${orderParams.toString()}`;
       } else {
         const errorData = await response.json();
         alert(`Error: ${errorData.message || 'Failed to submit order'}`);
@@ -72,6 +182,7 @@ export default function CheckoutPage() {
       alert('Failed to submit order. Please try again.');
     } finally {
       setLoading(false);
+      setShowConfirmation(false);
     }
   };
 
@@ -170,24 +281,6 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.foreground }}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={orderData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border transition-colors"
-                    style={{
-                      background: theme.colors.background,
-                      borderColor: theme.colors.border,
-                      color: theme.colors.foreground
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.foreground }}>
                     Telegram *
                   </label>
                   <input
@@ -208,13 +301,32 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.foreground }}>
-                    Phone
+                    Email
                   </label>
                   <input
-                    type="tel"
-                    name="phone"
-                    value={orderData.phone}
+                    type="email"
+                    name="email"
+                    value={orderData.email}
                     onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border transition-colors"
+                    style={{
+                      background: theme.colors.background,
+                      borderColor: theme.colors.border,
+                      color: theme.colors.foreground
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.foreground }}>
+                    Promo Code
+                  </label>
+                  <input
+                    type="text"
+                    name="promo_code"
+                    value={orderData.promo_code}
+                    onChange={handleInputChange}
+                    placeholder="Enter promo code"
                     className="w-full px-4 py-3 rounded-lg border transition-colors"
                     style={{
                       background: theme.colors.background,
@@ -244,17 +356,53 @@ export default function CheckoutPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !canPlaceOrder()}
                   className="w-full px-6 py-3 rounded-lg font-semibold transition-colors"
                   style={{ 
-                    background: loading ? theme.colors.muted : theme.colors.accent,
+                    background: loading || !canPlaceOrder() ? theme.colors.muted : theme.colors.accent,
                     color: theme.colors.background
                   }}
                 >
-                  {loading ? 'Processing...' : 'Place Order'}
+                  {loading ? 'Processing...' : 
+                   !canPlaceOrder() ? `Wait ${formatTimeRemaining(getTimeUntilNextOrder())}` : 
+                   'Place Order'}
                 </button>
               </form>
             </motion.div>
+
+            {/* Rate Limit Error Notification */}
+            <AnimatePresence>
+              {showRateLimitError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="mb-4 p-4 rounded-lg border"
+                  style={{ 
+                    background: '#fef2f2',
+                    borderColor: '#fecaca',
+                    color: '#dc2626'
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium">
+                        Too many orders
+                      </h3>
+                      <div className="mt-1 text-sm">
+                        You can place an order only once every 30 minutes. 
+                        Please wait {formatTimeRemaining(getTimeUntilNextOrder())} before placing another order.
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Order Summary */}
             <motion.div
@@ -326,6 +474,135 @@ export default function CheckoutPage() {
           </div>
         </div>
       </section>
+
+      {/* Confirmation Dialog */}
+      <AnimatePresence>
+        {showConfirmation && (
+          <motion.div 
+            className="fixed inset-0 flex items-center justify-center z-50"
+            style={{
+              background: "rgba(0, 0, 0, 0.3)",
+              backdropFilter: "blur(8px)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div 
+              className="rounded-2xl p-8 max-w-4xl mx-4 relative"
+              style={{ 
+                background: "rgba(255, 255, 255, 0.1)",
+                backdropFilter: "blur(20px)",
+                border: `1px solid rgba(255, 255, 255, 0.2)`,
+                color: theme.colors.foreground,
+              }}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowConfirmation(false)}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors"
+                style={{ color: theme.colors.mutedForeground }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+
+              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.colors.foreground }}>
+                Confirm Your Order
+              </h2>
+
+              {/* Order Details */}
+              <div className="mb-6 p-4 rounded-lg border" style={{ 
+                background: theme.colors.muted,
+                borderColor: theme.colors.border 
+              }}>
+                <h3 className="font-semibold mb-3" style={{ color: theme.colors.foreground }}>
+                  Contact Information:
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div><strong>Name:</strong> {orderData.name}</div>
+                  <div><strong>Telegram:</strong> {orderData.telegram}</div>
+                  {orderData.email && <div><strong>Email:</strong> {orderData.email}</div>}
+                  {orderData.promo_code && <div><strong>Promo Code:</strong> {orderData.promo_code}</div>}
+                  {orderData.message && <div><strong>Message:</strong> {orderData.message}</div>}
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 rounded-lg border" style={{ 
+                background: theme.colors.muted,
+                borderColor: theme.colors.border 
+              }}>
+                <h3 className="font-semibold mb-3" style={{ color: theme.colors.foreground }}>
+                  Order Summary:
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex justify-between">
+                      <span>{item.name} x{item.quantity}</span>
+                      <span>{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                  <div className="border-t pt-2 mt-2 flex justify-between font-semibold">
+                    <span>Total ({getTotalItems()} items):</span>
+                    <span style={{ color: theme.colors.accent }}>{formatPrice(getTotalPrice())}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agreement */}
+              <div className="mb-6">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="agreement"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-2"
+                    style={{ 
+                      accentColor: theme.colors.accent,
+                      borderColor: theme.colors.border 
+                    }}
+                  />
+                  <label htmlFor="agreement" className="text-sm cursor-pointer" style={{ color: theme.colors.mutedForeground }}>
+                    <span>I agree to the </span>
+                    <Link
+                      href="/guides/terms-and-conditions"
+                      className="underline hover:no-underline transition"
+                      style={{ color: theme.colors.accent }}
+                      target="_blank"
+                    >
+                      terms and conditions
+                    </Link>
+                    <span> of purchase/sale</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={confirmSubmit}
+                  disabled={!agreed || loading}
+                  className="px-12 py-4 rounded-xl font-semibold transition disabled:opacity-50"
+                  style={{ 
+                    background: agreed && !loading ? theme.colors.accent : theme.colors.muted,
+                    color: theme.colors.background
+                  }}
+                >
+                  {loading ? 'Processing...' : 'Confirm Order'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }

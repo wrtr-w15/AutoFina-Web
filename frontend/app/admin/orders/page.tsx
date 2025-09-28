@@ -18,7 +18,17 @@ interface Order {
   promo?: string;
   email?: string;
   message?: string;
+  order_type: string;
   status: string;
+      // Новые поля для checkout заказов
+      name?: string;
+      total_price?: number;
+  products?: Array<{
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
   created_at: string;
   updated_at: string;
 }
@@ -260,6 +270,50 @@ export default function AdminOrders() {
                       <p className="text-sm mb-3" style={{ color: theme.colors.mutedForeground }}>
                         {order.short_description}
                       </p>
+                      
+                      {/* Отображение информации о checkout заказе */}
+                      {order.order_type === 'available' && (
+                        <div className="mb-4 p-3 rounded-lg border" style={{ 
+                          background: theme.colors.muted,
+                          borderColor: theme.colors.border 
+                        }}>
+                          <h4 className="font-medium mb-2 text-sm" style={{ color: theme.colors.foreground }}>
+                            🛒 Cart Order Details
+                          </h4>
+                              {order.name && (
+                                <div className="text-sm mb-2">
+                                  <span className="font-medium" style={{ color: theme.colors.foreground }}>Customer:</span>
+                                  <span className="ml-2" style={{ color: theme.colors.mutedForeground }}>{order.name}</span>
+                                </div>
+                              )}
+                              {order.promo && (
+                                <div className="text-sm mb-2">
+                                  <span className="font-medium" style={{ color: theme.colors.foreground }}>Promo:</span>
+                                  <span className="ml-2" style={{ color: theme.colors.mutedForeground }}>{order.promo}</span>
+                                </div>
+                              )}
+                              {order.total_price && (
+                                <div className="text-sm mb-2">
+                                  <span className="font-medium" style={{ color: theme.colors.foreground }}>Total:</span>
+                                  <span className="ml-2 font-semibold" style={{ color: theme.colors.accent }}>
+                                    ${order.total_price.toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
+                          {order.products && order.products.length > 0 && (
+                            <div className="text-sm">
+                              <span className="font-medium" style={{ color: theme.colors.foreground }}>Products:</span>
+                              <div className="mt-1 space-y-1">
+                                {order.products.map((product, index) => (
+                                  <div key={index} className="ml-2 text-xs" style={{ color: theme.colors.mutedForeground }}>
+                                    • {product.name} x{product.quantity} - ${product.price.toFixed(2)} each
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center">
                           <PhoneIcon className="mr-2" size={16} />

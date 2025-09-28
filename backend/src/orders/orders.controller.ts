@@ -12,13 +12,16 @@ export class OrdersController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createOrderDto: CreateOrderDto) {
     try {
+      console.log('OrdersController: Received data:', JSON.stringify(createOrderDto, null, 2));
       const order = await this.ordersService.create(createOrderDto);
+      console.log('OrdersController: Created order:', JSON.stringify(order, null, 2));
       return {
         success: true,
         message: 'Order created successfully',
         data: order
       };
     } catch (error) {
+      console.error('OrdersController: Error creating order:', error);
       return {
         success: false,
         message: 'Failed to create order',
