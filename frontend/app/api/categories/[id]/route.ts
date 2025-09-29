@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const token = cookies().get('admin_token')?.value;
+  const token = (await cookies()).get('admin_token')?.value;
   if (!token) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
   }
@@ -37,7 +37,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const token = cookies().get('admin_token')?.value;
+  const token = (await cookies()).get('admin_token')?.value;
   if (!token) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
   }
@@ -70,7 +70,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const token = cookies().get('admin_token')?.value;
+  const token = (await cookies()).get('admin_token')?.value;
   if (!token) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
   }

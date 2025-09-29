@@ -132,15 +132,6 @@ export default function Home() {
         
         {/* soft glow */}
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(800px 400px at 50% 20%, rgba(156,163,175,0.18), transparent 70%), radial-gradient(600px 300px at 80% 80%, rgba(156,163,175,0.10), transparent 70%)",
-            filter: "blur(2px)",
-          }}
-        />
-        <div
           className="relative w-full"
           style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}
         >

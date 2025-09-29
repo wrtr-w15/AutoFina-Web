@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import theme from '@/themes/theme';
 import { useTranslation } from '@/i18n';
 import { CheckIcon, ArrowLeftIcon } from '@/components/Icons';
+import ShimmerGradient from '@/components/ShimmerGradient';
 
 interface OrderDetails {
   id: number;
@@ -26,7 +27,7 @@ interface OrderDetails {
   created_at: string;
 }
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
@@ -300,5 +301,18 @@ export default function OrderSuccessPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-dvh flex items-center justify-center px-6 py-12 relative" style={{ background: theme.colors.background, color: theme.colors.foreground }}>
+        <ShimmerGradient />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: theme.colors.accent }}></div>
+      </main>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }

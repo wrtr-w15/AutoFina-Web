@@ -296,7 +296,7 @@ export default function AdminOrders() {
                                 <div className="text-sm mb-2">
                                   <span className="font-medium" style={{ color: theme.colors.foreground }}>Total:</span>
                                   <span className="ml-2 font-semibold" style={{ color: theme.colors.accent }}>
-                                    ${order.total_price.toFixed(2)}
+                                    ${typeof order.total_price === 'number' ? order.total_price.toFixed(2) : parseFloat(order.total_price).toFixed(2)}
                                   </span>
                                 </div>
                               )}
@@ -306,7 +306,7 @@ export default function AdminOrders() {
                               <div className="mt-1 space-y-1">
                                 {order.products.map((product, index) => (
                                   <div key={index} className="ml-2 text-xs" style={{ color: theme.colors.mutedForeground }}>
-                                    • {product.name} x{product.quantity} - ${product.price.toFixed(2)} each
+                                    • {product.name} x{product.quantity} - ${typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price).toFixed(2)} each
                                   </div>
                                 ))}
                               </div>

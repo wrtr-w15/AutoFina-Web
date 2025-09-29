@@ -29,13 +29,12 @@ export default function SiteHeader() {
   return (
     <header
       className="sticky top-0 z-50"
-      style={{
-        background: "rgba(10,10,11,0.6)",
-        backdropFilter: "blur(8px)",
-        borderBottom: `1px solid ${theme.colors.border}`,
-      }}
     >
       <div className="mx-auto flex items-center justify-between px-8" style={{ maxWidth: "1200px" }}>
+        {/* Left side - empty for balance */}
+        <div className="flex-1"></div>
+        
+        {/* Center - Navigation */}
         <nav className="flex items-center gap-6 py-4">
           {mounted && navItems.map((item) => {
             const active = pathname === item.href;
@@ -43,15 +42,23 @@ export default function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-light"
-                style={{ color: active ? theme.colors.foreground : theme.colors.mutedForeground }}
+                className={`text-sm font-light transition-colors ${
+                  active ? 'font-semibold' : 'font-light'
+                }`}
+                style={{ 
+                  color: active ? theme.colors.foreground : theme.colors.mutedForeground,
+                  textDecoration: active ? 'underline' : 'none',
+                  textUnderlineOffset: '4px'
+                }}
               >
                 {item.label}
               </Link>
             );
           })}
         </nav>
-        <div className="flex items-center gap-4">
+        
+        {/* Right side - Language & Cart */}
+        <div className="flex-1 flex items-center justify-end gap-4">
           {mounted && <LanguagePopover current={locale} onSelect={setLocale} />}
           {mounted && (
             <Link

@@ -9,6 +9,10 @@ import { useCart } from "@/context/CartContext";
 import { ShoppingCartIcon, CheckIcon } from "@/components/Icons";
 import Notification from "@/components/Notification";
 import FilterPopover from "@/components/FilterPopover";
+import ShimmerGradient from "@/components/ShimmerGradient";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import "@/styles/markdown.css";
 
 interface Product {
   id: number;
@@ -191,10 +195,10 @@ export default function ShopPage() {
     );
 
   return (
-    <main className="min-h-dvh px-6" style={{ background: theme.colors.background, color: theme.colors.foreground }}>
-      <section className="relative flex items-center justify-center py-20">
-        <div aria-hidden className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(800px 400px at 50% 20%, rgba(156,163,175,0.18), transparent 70%), radial-gradient(600px 300px at 80% 80%, rgba(156,163,175,0.10), transparent 70%)", filter: "blur(2px)" }} />
+    <main className="min-h-dvh px-6 relative" style={{ background: theme.colors.background, color: theme.colors.foreground }}>
+      <ShimmerGradient />
+      
+      <section className="relative flex items-center justify-center py-20 z-10">
         <div className="relative w-full" style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}>
           <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-4xl sm:text-5xl font-bold tracking-tight text-center mb-2"
@@ -209,7 +213,7 @@ export default function ShopPage() {
                 <div className="relative flex-1">
                   <input type="text" placeholder="Search products..." value={filters.search} onChange={e => updateFilters({ search: e.target.value })}
                     className="w-full px-3 py-2 pl-8 rounded-md border transition-colors text-sm"
-                    style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }} />
+                    style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: theme.colors.border, color: theme.colors.foreground }} />
                   <svg className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: theme.colors.mutedForeground }}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -222,7 +226,7 @@ export default function ShopPage() {
                       ref={filterButtonRef}
                       onClick={() => setShowFilters(!showFilters)}
                       className="px-3 py-2 rounded-md border transition-colors flex items-center gap-1.5 relative hover:bg-opacity-10 text-sm"
-                      style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }}>
+                      style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: theme.colors.border, color: theme.colors.foreground }}>
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                         d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
@@ -252,7 +256,7 @@ export default function ShopPage() {
                   <div className="relative" data-sort-popover>
                     <button onClick={() => setShowSortPopover(!showSortPopover)}
                       className="px-3 py-2 rounded-md border transition-colors flex items-center gap-1.5 relative hover:bg-opacity-10 text-sm"
-                      style={{ background: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.foreground }}>
+                      style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: theme.colors.border, color: theme.colors.foreground }}>
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                           d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
@@ -306,13 +310,13 @@ export default function ShopPage() {
                 return (
                   <motion.div key={product.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
                     className="relative overflow-hidden rounded-2xl p-4 transition-transform hover:-translate-y-1 cursor-pointer flex flex-col h-80"
-                    style={{ background: `linear-gradient(180deg, ${theme.colors.card} 0%, ${theme.colors.muted} 100%)`,
+                    style={{ background: "rgba(255, 255, 255, 0.1)",
                       boxShadow: theme.shadow.soft, border: `1px solid ${theme.colors.border}` }}
                     onClick={() => window.location.href = `/product/${product.id}`}>
                     {/* Product image in top left corner */}
                     <div className="absolute top-3 left-3 w-24 h-24 rounded-lg overflow-hidden z-10 flex items-center justify-center"
                       style={{ 
-                        background: theme.colors.muted,
+                        background: "rgba(255, 255, 255, 0.1)",
                         border: `1px solid ${theme.colors.border}`
                       }}>
                       {product.image_url ? (
@@ -354,7 +358,7 @@ export default function ShopPage() {
                             <span
                               className="px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-all duration-200 hover:scale-105"
                               style={{
-                                background: theme.colors.muted,
+                                background: "rgba(255, 255, 255, 0.1)",
                                 color: theme.colors.mutedForeground
                               }}
                               onMouseEnter={() => setHoveredProductId(product.id)}
@@ -403,7 +407,11 @@ export default function ShopPage() {
                     {/* Title and description to the right of image */}
                     <div className="flex-shrink-0 pl-28 pt-2">
                       <h3 className="text-lg font-semibold mb-2" style={{ color: theme.colors.foreground }}>{c.name}</h3>
-                      <p className="mb-4 leading-relaxed text-sm" style={{ color: theme.colors.mutedForeground }}>{c.short_description}</p>
+                      <div className="mb-4 leading-relaxed text-sm prose prose-sm max-w-none" style={{ color: theme.colors.mutedForeground }}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {c.short_description}
+                        </ReactMarkdown>
+                      </div>
                     </div>
 
                     {/* Features section - fixed position */}
@@ -428,7 +436,7 @@ export default function ShopPage() {
                                 {localizedBlocks.length > 3 && (
                                   <div className="text-sm px-3 py-1 rounded-full inline-block w-fit font-normal" 
                                     style={{ 
-                                      background: theme.colors.muted, 
+                                      background: "rgba(255, 255, 255, 0.1)", 
                                       color: theme.colors.mutedForeground 
                                     }}>
                                     +{localizedBlocks.length - 3} more
@@ -468,8 +476,10 @@ export default function ShopPage() {
           )}
         </div>
       </section>
-      <Notification show={showNotification} type="success" title="Success" message="Product added to cart!"
-        onClose={() => setShowNotification(false)} autoHide duration={5000} />
+      <div className="relative z-20">
+        <Notification show={showNotification} type="success" title="Success" message="Product added to cart!"
+          onClose={() => setShowNotification(false)} autoHide duration={5000} />
+      </div>
     </main>
   );
 }

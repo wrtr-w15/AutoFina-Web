@@ -8,6 +8,10 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCartIcon, CheckIcon, ArrowLeftIcon } from "@/components/Icons";
 import Notification from "@/components/Notification";
+import ShimmerGradient from "@/components/ShimmerGradient";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import "@/styles/markdown.css";
 
 interface Product {
   id: number;
@@ -159,17 +163,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <main className="min-h-dvh px-6" style={{ background: theme.colors.background, color: theme.colors.foreground }}>
-      <section className="relative flex items-center justify-center py-20">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(800px 400px at 50% 20%, rgba(156,163,175,0.18), transparent 70%), radial-gradient(600px 300px at 80% 80%, rgba(156,163,175,0.10), transparent 70%)",
-            filter: "blur(2px)",
-          }}
-        />
+    <main className="min-h-dvh px-6 relative" style={{ background: theme.colors.background, color: theme.colors.foreground }}>
+      <ShimmerGradient />
+      <section className="relative flex items-center justify-center py-20 z-10">
         <div className="relative w-full" style={{ maxWidth: theme.layout.maxWidth, marginInline: "auto" }}>
           {/* Back Button */}
           <motion.div
@@ -235,9 +231,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <div className="text-3xl font-bold mb-6" style={{ color: theme.colors.accent }}>
                   {formatPrice(product.price)}
                 </div>
-                <p className="text-lg leading-relaxed" style={{ color: theme.colors.mutedForeground }}>
-                  {getLocalizedContent(product).short_description}
-                </p>
+                <div className="text-lg leading-relaxed prose prose-lg max-w-none" style={{ color: theme.colors.mutedForeground }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {getLocalizedContent(product).short_description}
+                  </ReactMarkdown>
+                </div>
               </div>
 
               {/* Full Description */}
@@ -245,9 +243,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.colors.foreground }}>
                   Description
                 </h2>
-                <p className="text-lg leading-relaxed" style={{ color: theme.colors.mutedForeground }}>
-                  {getLocalizedContent(product).full_description}
-                </p>
+                <div className="text-lg leading-relaxed prose prose-lg max-w-none" style={{ color: theme.colors.mutedForeground }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {getLocalizedContent(product).full_description}
+                  </ReactMarkdown>
+                </div>
               </div>
 
               {/* Description Blocks */}
@@ -270,16 +270,18 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                             transition={{ delay: 0.1 * index }}
                             className="p-6 rounded-2xl border"
                             style={{ 
-                              background: theme.colors.card,
+                              background: "rgba(255, 255, 255, 0.1)",
                               borderColor: theme.colors.border 
                             }}
                           >
                             <h3 className="text-xl font-semibold mb-3" style={{ color: theme.colors.foreground }}>
                               {block.title}
                             </h3>
-                            <p className="leading-relaxed" style={{ color: theme.colors.mutedForeground }}>
-                              {block.content}
-                            </p>
+                            <div className="leading-relaxed prose prose-sm max-w-none" style={{ color: theme.colors.mutedForeground }}>
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {block.content}
+                              </ReactMarkdown>
+                            </div>
                           </motion.div>
                         ))}
                       </div>

@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
         short_description: body.shortDescription || '',
         technical_spec: body.technicalSpec || '',
         timeline: body.timeline || '',
+        name: body.name || '',
         telegram: body.telegram,
         promo: body.promo || '',
         email: body.email || '',

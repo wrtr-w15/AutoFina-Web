@@ -1,5 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Debug environment variables
+console.log('Environment variables loaded:');
+console.log('WEBHOOK_URL:', process.env.WEBHOOK_URL);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('PORT:', process.env.PORT);
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

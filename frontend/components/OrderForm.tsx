@@ -12,6 +12,7 @@ type OrderPayload = {
   shortDescription: string;
   technicalSpec: string;
   timeline: string;
+  name: string;
   telegram: string;
   promo: string;
   email: string;
@@ -28,6 +29,7 @@ export default function OrderForm() {
     shortDescription: "",
     technicalSpec: "",
     timeline: "",
+    name: "",
     telegram: "",
     promo: "",
     email: "",
@@ -86,6 +88,10 @@ export default function OrderForm() {
 
   function validateForm() {
     const errors: string[] = [];
+    
+    if (!form.name.trim()) {
+      errors.push("Name " + t("order.validation.required"));
+    }
     
     if (!form.telegram.trim()) {
       errors.push(t("order.form.telegram") + " " + t("order.validation.required"));
@@ -180,6 +186,7 @@ export default function OrderForm() {
         shortDescription: "",
         technicalSpec: "",
         timeline: "",
+        name: "",
         telegram: "",
         promo: "",
         email: "",
@@ -198,7 +205,7 @@ export default function OrderForm() {
   }
 
   const baseInputStyle: React.CSSProperties = {
-    background: theme.colors.muted,
+    background: "rgba(255, 255, 255, 0.1)",
     border: `1px solid ${theme.colors.border}`,
     color: theme.colors.foreground,
     borderRadius: "16px", // больше радиус
@@ -218,22 +225,39 @@ export default function OrderForm() {
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto">
-      {/* Telegram - moved to top */}
-      <Field
-        label={t("order.form.telegram")}
-        required
-        input={
-          <input
-            className="w-full px-3 py-2 rounded-2xl"
-            style={baseInputStyle}
-            value={form.telegram}
-            onFocus={(e) => onFocus(e.currentTarget)}
-            onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => updateForm({ telegram: e.target.value })}
-            placeholder={t("order.form.telegram_ph")}
-          />
-        }
-      />
+      {/* Name and Telegram - split in half */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field
+          label="Name"
+          required
+          input={
+            <input
+              className="w-full px-3 py-2 rounded-2xl"
+              style={baseInputStyle}
+              value={form.name}
+              onFocus={(e) => onFocus(e.currentTarget)}
+              onBlur={(e) => onBlur(e.currentTarget)}
+              onChange={(e) => updateForm({ name: e.target.value })}
+              placeholder="Your name"
+            />
+          }
+        />
+        <Field
+          label={t("order.form.telegram")}
+          required
+          input={
+            <input
+              className="w-full px-3 py-2 rounded-2xl"
+              style={baseInputStyle}
+              value={form.telegram}
+              onFocus={(e) => onFocus(e.currentTarget)}
+              onBlur={(e) => onBlur(e.currentTarget)}
+              onChange={(e) => updateForm({ telegram: e.target.value })}
+              placeholder={t("order.form.telegram_ph")}
+            />
+          }
+        />
+      </div>
 
       {/* Название проекта */}
       <Field
@@ -272,12 +296,23 @@ export default function OrderForm() {
 
       {/* Техническое задание */}
       <Field
-        label={
-          <div className="flex items-center justify-between">
-            <span>{t("order.form.technicalSpec")}</span>
+        label={t("order.form.technicalSpec")}
+        required
+        input={
+          <div className="relative">
+            <textarea
+              className="w-full px-3 py-2 rounded-2xl resize-none"
+              style={baseInputStyle}
+              rows={5}
+              value={form.technicalSpec}
+              onFocus={(e) => onFocus(e.currentTarget)}
+              onBlur={(e) => onBlur(e.currentTarget)}
+              onChange={(e) => updateForm({ technicalSpec: e.target.value })}
+              placeholder={t("order.form.technicalSpec_ph")}
+            />
             <Link
               href="/guides/technical-specification"
-              className="text-xs px-2 py-1 rounded-md transition"
+              className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full text-xs transition"
               style={{
                 background: "rgba(255, 255, 255, 0.1)",
                 border: `1px solid ${theme.colors.border}`,
@@ -286,33 +321,23 @@ export default function OrderForm() {
               title={t("order.form.technicalSpecHelp")}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+                e.currentTarget.style.color = theme.colors.foreground;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                e.currentTarget.style.color = theme.colors.mutedForeground;
               }}
             >
-              {t("order.form.technicalSpecHelp")}
+              i
             </Link>
           </div>
-        }
-        required
-        input={
-          <textarea
-            className="w-full px-3 py-2 rounded-2xl resize-none"
-            style={baseInputStyle}
-            rows={5}
-            value={form.technicalSpec}
-            onFocus={(e) => onFocus(e.currentTarget)}
-            onBlur={(e) => onBlur(e.currentTarget)}
-            onChange={(e) => updateForm({ technicalSpec: e.target.value })}
-            placeholder={t("order.form.technicalSpec_ph")}
-          />
         }
       />
 
       {/* Сроки выполнения заказа */}
       <Field
         label={t("order.form.timeline")}
+        required
         input={
           <input
             className="w-full px-3 py-2 rounded-2xl"
@@ -338,7 +363,7 @@ export default function OrderForm() {
             onFocus={(e) => onFocus(e.currentTarget)}
             onBlur={(e) => onBlur(e.currentTarget)}
             onChange={(e) => updateForm({ promo: e.target.value })}
-            placeholder={t("order.form.promo_ph")}
+            placeholder="Promo code"
           />
         }
       />
